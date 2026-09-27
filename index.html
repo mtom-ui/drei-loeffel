@@ -250,6 +250,14 @@ select.inp{appearance:none;-webkit-appearance:none}
 mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1px}
 [data-theme="dark"] mark{background:rgba(252,202,89,.35)}
 
+/* Zutaten nach Kategorie */
+.ing-tools{display:flex;align-items:center;gap:14px;margin:4px 0 6px}
+.ing-group{margin-top:18px}
+.ing-head{display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--ink);font-family:Gloock,serif;font-size:18px}
+.ing-head .cnt{margin-left:auto;font-family:'Instrument Sans',system-ui,sans-serif;font-size:12px;color:var(--muted)}
+.cat-pick{position:relative;flex:none;display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:999px;border:1.5px solid var(--ink);font-size:12px;font-weight:600;white-space:nowrap}
+.cat-pick select{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px}
+
 /* Filter */
 .filter-btn{gap:6px}
 .filter-btn .fcount{display:grid;place-items:center;min-width:20px;height:20px;border-radius:999px;background:#FCCA59;color:#12284A;font-size:12px;font-weight:700;padding:0 5px}
@@ -379,7 +387,7 @@ const pad = n => String(n).padStart(2, '0');
 const S = {
   screen: 'home', rid: null,
   dark: stored('theme') ? stored('theme') === 'dark' : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches),
-  cat: 'Alle', q: '', sf: { time: null, kcal: null, fav: false, neu: false, tags: [], tagAny: false }, shopChecks: new Set(),
+  cat: 'Alle', q: '', sf: { time: null, kcal: null, fav: false, neu: false, tags: [], tagAny: false }, shopChecks: new Set(), catalog: {}, catEdit: false, ingOrder: stored('ingOrder') || 'cat',
   serv: {}, tab: 'ingr', checked: {},
   favs: (() => { try{ return JSON.parse(stored('favs')) || []; }catch{ return []; } })(),
   weekOffset: 0, pday: (new Date().getDay() + 6) % 7,
@@ -547,7 +555,15 @@ function startLive(){
 // ============================================================
 // Daten
 // ============================================================
+async function loadCatalog(){
+  if(!CAT_DB.ok) return '';
+  const { data, error } = await sb.from('ingredient_categories').select('name_key, category');
+  if(error){ CAT_DB.ok = false; console.warn('ingredient_categories fehlt – nur Stichwort-Vorschläge', error); return ''; }
+  S.catalog = Object.fromEntries(data.map(x => [x.name_key, x.category]));
+  return JSON.stringify(data);
+}
 async function loadRecipes(quiet){
+  const catSig = await loadCatalog();
   const { data, error } = await sb.from('recipes').select(`
       id, title, description, instructions, image_url, servings, prep_time_minutes,
       calories_per_serving, calories_source, source_type, source_url, created_at,
@@ -561,7 +577,7 @@ async function loadRecipes(quiet){
     return;
   }
   SYNC.error = false; SYNC.last = new Date();
-  const sig = JSON.stringify(data);
+  const sig = JSON.stringify(data) + catSig;
   if(quiet && sig === recipesSig){ updateSync(); return; }
   recipesSig = sig;
   S.recipes = data || [];
@@ -679,16 +695,55 @@ function rememberSearch(){
 
 // ---------- Einkaufsliste ----------
 const SHOP_DB = { ok: true };
-const SHOP_CATS = [
-  { key: 'vorrat',  label: 'Vorrat & Konserven', sh: 'daisy',   c: C.orange, re: /dose|passiert|tomatenmark|bruhe|fond|nudel|pasta|spaghetti|penne|fusilli|reis\b|risotto|linsen|bohnen|kichererbsen|couscous|quinoa|bulgur|gnocchi|kokosmilch|sauergurke|gewurzgurke|mais\b|tortilla|wraps|panko|semmelbrosel/ },
-  { key: 'gewuerz', label: 'Gewürze, Öl & Saucen', sh: 'star8',  c: C.cobalt, re: /salz|pfeffer|ol\b|essig|oregano|paprikapulver|currypulver|chilipulver|kreuzkummel|kummel|curry|zimt|muskat|senf|soja|honig|sirup|ketchup|gewurz|lorbeer|chiliflocken|paprika edelsuss|garam|kurkuma|brühwurfel|bruhwurfel/ },
-  { key: 'fleisch', label: 'Fleisch & Fisch',     sh: 'burst',   c: C.pink,   re: /hack|fleisch|rind|schwein|huhn|hahnchen|pute|speck|schinken|wurst|bacon|lachs|fisch|garnele|thunfisch|kasseler|salami|chorizo/ },
-  { key: 'kuehl',   label: 'Kühlregal',            sh: 'circle',  c: C.blue,   re: /milch|sahne|butter|joghurt|quark|kase|parmesan|feta|mozzarella|schmand|creme|mascarpone|ricotta|(^|[^a-z])(ei|eier|eigelb|eiweiss)([^a-z]|$)|tofu/ },
-  { key: 'backen',  label: 'Backen & Nüsse',       sh: 'scallop', c: C.yellow, re: /mehl\b|zucker|hefe|backpulver|natron|vanill|starke|haferflocken|kakao|schokolade|sesam|nusse|nuss\b|mandel|walnuss|haselnuss|pinienkern|rosine|brot|brotchen|toast/ },
-  { key: 'gemuese', label: 'Obst, Gemüse & Kräuter', sh: 'flower', c: C.green, re: /tomat|zwiebel|schalott|knoblauch|kartoffel|karott|mohre|paprika|zucchini|gurke|salat|spinat|kohl|brokkoli|lauch|porree|sellerie|pilz|champignon|avocado|zitrone|limette|apfel|birne|banane|beere|orange|ingwer|krauter|petersilie|basilikum|schnittlauch|dill|koriander|minze|kurbis|aubergine|rucola|chili|rote bete|fenchel|spargel|erbsen|thymian|rosmarin|salbei|mango|ananas|traube/ },
+// Zutaten-Kategorien (Schlüssel müssen zu schema.sql und mcp-server/src/server.ts passen).
+const CATS = [
+  { key: 'fleisch',   label: 'Fleisch & Fisch',      sh: 'burst',   c: C.orange },
+  { key: 'gemuese',   label: 'Gemüse',               sh: 'flower',  c: C.green },
+  { key: 'obst',      label: 'Obst',                 sh: 'clover',  c: C.pink },
+  { key: 'milch',     label: 'Milchprodukte & Eier', sh: 'circle',  c: C.blue },
+  { key: 'vorrat',    label: 'Vorrat & Konserven',   sh: 'daisy',   c: C.yellow },
+  { key: 'backen',    label: 'Backzutaten',          sh: 'scallop', c: C.yellow },
+  { key: 'nuesse',    label: 'Nüsse & Samen',        sh: 'star6',   c: C.orange },
+  { key: 'oel',       label: 'Öl, Essig & Saucen',   sh: 'spiky',   c: C.cobalt },
+  { key: 'gewuerze',  label: 'Gewürze & Kräuter',    sh: 'star8',   c: C.green },
+  { key: 'sonstiges', label: 'Sonstiges',            sh: 'ring',    c: '#9AA3B5' },
 ];
-const OTHER_CAT = { key: 'sonst', label: 'Sonstiges', sh: 'clover', c: '#9AA3B5' };
-function shopCat(name){ const n = norm(name); return SHOP_CATS.find(c => c.re.test(n)) || OTHER_CAT; }
+const CAT_BY_KEY = Object.fromEntries(CATS.map(c => [c.key, c]));
+// Vorschlag per Stichwort, falls eine Zutat noch nicht im Verzeichnis steht. Reihenfolge ist wichtig
+// (z.B. "Kokosmilch" vor "milch", "Paprikapulver" vor "paprika").
+const CLASSIFY = [
+  ['backen',   /backpulver|puddingpulver|kakao|natron/],
+  ['vorrat',   /dose|passiert|tomatenmark|bruhe|fond\b|kokosmilch|sauergurke|saure gurke|gewurzgurke|kapern/],
+  ['oel',      /ol\b|essig|sauce|sosse|senf|ketchup|mayo|tahin|pesto/],
+  ['gewuerze', /salz|pfeffer|\w*pulver|kummel|curry|zimt|muskat|lorbeer|oregano|thymian|rosmarin|basilikum|petersilie|schnittlauch|dill|koriander|minze|salbei|majoran|estragon|chiliflocken|kurkuma|garam|gewurz|krauter|vanilleschote/],
+  ['fleisch',  /hack(?!t)|fleisch|rind|schwein|huhn|hahnchen|pute|speck|schinken|wurst|bacon|lachs|fisch|garnele|thunfisch|kasseler|salami|chorizo|lamm|\bente\b|filet|schnitzel|gulasch/],
+  ['milch',    /milch|sahne|butter|joghurt|quark|kase|parmesan|feta|mozzarella|schmand|creme|mascarpone|ricotta|burrata|halloumi|(^|[^a-z])(ei|eier|eigelb|eiweiss)([^a-z]|$)/],
+  ['backen',   /mehl\b|zucker|hefe|starke|vanill|schokolade|honig|sirup|gelatine|marzipan/],
+  ['nuesse',   /nuss|mandel|pinienkern|sesam|kerne\b|samen|saaten|chia/],
+  ['vorrat',   /nudel|pasta|spaghetti|penne|fusilli|tagliatelle|lasagne|reis\b|risotto|linsen|bohnen|kichererbsen|couscous|quinoa|bulgur|gnocchi|haferflocken|brot|brotchen|toast|tortilla|wraps|semmelbrosel|panko|mais\b|tofu/],
+  ['obst',     /zitrone|limette|apfel|birne|banane|beere|orange|mango|ananas|traube|kirsche|pfirsich|aprikose|pflaume|rosine|dattel|feige|melone|kiwi|granatapfel/],
+  ['gemuese',  /tomat|zwiebel|schalott|knoblauch|kartoffel|karott|mohre|paprika|zucchini|gurke|salat|spinat|kohl|brokkoli|lauch|porree|sellerie|pilz|champignon|avocado|ingwer|chili|kurbis|aubergine|rucola|rote bete|fenchel|spargel|erbsen|radieschen|mangold|pastinake/],
+];
+const CAT_DB = { ok: true };
+const catKey = name => norm(baseName(name)).replace(/\s+/g, ' ').trim();
+function classify(text){ const n = norm(text); const hit = CLASSIFY.find(([, re]) => re.test(n)); return hit ? hit[0] : 'sonstiges'; }
+// Erst der Name ohne Klammer-Hinweis (sonst wird "Tomaten (oder Pflaumentomaten)" zu Obst),
+// nur "Dose"/"passiert" zählt auch aus dem Hinweis.
+function guessCat(name){
+  if(/\bdose|passiert/.test(norm(name))) return 'vorrat';
+  const c = classify(baseName(name));
+  return c === 'sonstiges' ? classify(name) : c;
+}
+function catOf(name){ return CAT_BY_KEY[S.catalog[catKey(name)]] || CAT_BY_KEY[guessCat(name)]; }
+async function setCategory(name, key){
+  const nk = catKey(name);
+  S.catalog[nk] = key; S.pop = 'cat:' + nk;
+  render();
+  await track(async () => {
+    const { error } = await sb.from('ingredient_categories').upsert({ name_key: nk, category: key, updated_at: new Date().toISOString() });
+    if(error){ CAT_DB.ok = false; fail('Kategorie nicht gespeichert – bitte das SQL aus schema.sql ausführen', error); }
+  });
+}
 const baseName = n => n.replace(/\s*\([^)]*\)/g, '').trim();
 function unitNorm(amount, unit){
   const u = norm(unit || '').replace(/\.$/, '');
@@ -708,6 +763,7 @@ function shoppingList(){
     const r = byId(e.recipe_id);
     if(!r) continue;
     for(const i of r.ingredients || []){
+      if(/^((lau)?warmes|kaltes|heisses)?\s*wasser\b/.test(norm(baseName(i.name)))) continue;
       const [amt, unit] = unitNorm(i.amount, i.unit);
       const key = norm(baseName(i.name)) + '|' + (amt == null ? '' : norm(unit));
       const it = items.get(key) || { key, name: baseName(i.name) || i.name, raw: i.name, unit: amt == null ? '' : unit, amount: null, loose: false, from: new Set() };
@@ -722,9 +778,9 @@ function shoppingList(){
     const twin = [...items.values()].find(x => x !== it && x.amount != null && norm(x.name) === norm(it.name));
     if(twin){ twin.loose = true; it.from.forEach(f => twin.from.add(f)); items.delete(key); }
   }
-  const groups = [...SHOP_CATS, OTHER_CAT].map(c => ({ ...c, items: [] }));
+  const groups = CATS.map(c => ({ ...c, items: [] }));
   for(const it of items.values()){
-    const g = groups.find(x => x.key === shopCat(it.raw).key);
+    const g = groups.find(x => x.key === catOf(it.raw).key);
     g.items.push(it);
   }
   groups.forEach(g => g.items.sort((a, b) => (S.shopChecks.has(a.key) - S.shopChecks.has(b.key)) || a.name.localeCompare(b.name, 'de')));
@@ -973,12 +1029,35 @@ function detailHTML(){
     { v: String((r.ingredients || []).length), l: 'Zutaten' },
     { v: r.calories_per_serving ? Math.round(r.calories_per_serving) : '–', l: 'kcal / Portion' + (r.calories_per_serving && r.calories_source === 'estimated' ? ' (ca.)' : '') },
   ];
-  const ingr = (r.ingredients || []).map(i => {
+  const ingRow = i => {
     const k = r.id + ':' + i.id, on = !!S.checked[k];
+    const label = `<span class="n">${esc(i.name)}${i.note ? ` <span class="muted">(${esc(i.note)})</span>` : ''}</span>`;
+    if(S.catEdit){
+      const c = catOf(i.name), popped = S.pop === 'cat:' + catKey(i.name);
+      return `<div class="ing">
+        <span class="${popped ? 'pop' : ''}" style="display:grid">${shape(c.sh, c.c, 'width:22px;height:22px')}</span>${label}
+        <label class="cat-pick">${esc(c.label)} ▾<select data-ingcat="${esc(i.name)}" aria-label="Kategorie für ${esc(i.name)}">
+          ${CATS.map(x => `<option value="${x.key}"${x.key === c.key ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}
+        </select></label>
+      </div>`;
+    }
     return `<button class="ing${on ? ' done' : ''}" data-act="check" data-k="${esc(k)}">
-      ${S.pop === 'ing:' + k ? `<span class="pop" style="display:grid">${mark(on)}</span>` : mark(on)}<span class="n">${esc(i.name)}${i.note ? ` <span class="muted">(${esc(i.note)})</span>` : ''}</span><span class="a">${esc(amountOf(i, serv, r.servings))}</span>
+      ${S.pop === 'ing:' + k ? `<span class="pop" style="display:grid">${mark(on)}</span>` : mark(on)}${label}<span class="a">${esc(amountOf(i, serv, r.servings))}</span>
     </button>`;
-  }).join('');
+  };
+  const ings = r.ingredients || [];
+  const ingr = S.ingOrder === 'recipe'
+    ? ings.map(ingRow).join('')
+    : CATS.map(c => {
+        const items = ings.filter(i => catOf(i.name).key === c.key);
+        if(!items.length) return '';
+        return `<div class="ing-group"><div class="ing-head">${shape(c.sh, c.c, 'width:16px;height:16px;flex:none')}<span>${esc(c.label)}</span><span class="cnt">${items.length}</span></div>${items.map(ingRow).join('')}</div>`;
+      }).join('');
+  const ingTools = ings.length ? `<div class="ing-tools">
+      <div class="seg seg-sm" style="flex:1"><button class="${S.ingOrder !== 'recipe' ? 'on' : ''}" data-act="ingOrder" data-v="cat">Nach Kategorie</button><button class="${S.ingOrder === 'recipe' ? 'on' : ''}" data-act="ingOrder" data-v="recipe">Wie im Rezept</button></div>
+      <button class="today-link" data-act="catEdit">${S.catEdit ? 'Fertig' : 'Anpassen'}</button>
+    </div>
+    ${S.catEdit ? '<p class="hint" style="margin:8px 0 0">Kategorie tippen und ändern – gilt für diese Zutat in allen Rezepten.</p>' : ''}` : '';
   const stepsHTML = steps.map((s, i) => {
     const c = STEP_C[i % STEP_C.length], mins = minutesIn(s);
     return `<div class="step">
@@ -1025,6 +1104,7 @@ function detailHTML(){
               <button class="circle-btn solid" data-act="serv" data-v="1" style="font-size:22px" aria-label="Mehr">+</button>
             </div>
           </div>
+          ${ingTools}
           ${ingr || '<p class="muted">Keine Zutaten hinterlegt.</p>'}
           ${r.calories_per_serving ? `<p class="note">≈ ${Math.round(r.calories_per_serving * serv)} kcal für ${serv} ${serv === 1 ? 'Portion' : 'Portionen'}</p>` : ''}
         ` : `
@@ -1363,7 +1443,7 @@ function go(screen, extra){
   render();
   if(screen === 'plan' || screen === 'shop') loadPlan(true);
 }
-function openRecipe(id){ stopTimer(); go('detail', { rid: id, tab: 'ingr', flash: null }); }
+function openRecipe(id){ stopTimer(); go('detail', { rid: id, tab: 'ingr', flash: null, catEdit: false }); }
 function toggleFav(id){
   S.favs = S.favs.includes(id) ? S.favs.filter(x => x !== id) : [id, ...S.favs];
   store('favs', JSON.stringify(S.favs));
@@ -1561,7 +1641,7 @@ async function deleteRecipe(){
 // ============================================================
 // Events
 // ============================================================
-const HAPTIC = new Set(['fOpen','fTime','fKcal','fTagMode','fReset','fClear','shopCheck','sfTime','sfFav','sfNew','sfTag','sqSet','refresh','theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
+const HAPTIC = new Set(['ingOrder','catEdit','fOpen','fTime','fKcal','fTagMode','fReset','fClear','shopCheck','sfTime','sfFav','sfNew','sfTag','sqSet','refresh','theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
 document.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]');
   if(!el) return;
@@ -1597,6 +1677,8 @@ document.addEventListener('click', async e => {
     case 'sfTag': { const t = S.sf.tags; S.sf.tags = t.includes(v) ? t.filter(x => x !== v) : [...t, v]; S.pop = 'tag:' + v; if(S.screen !== 'search') go('search'); else render(); break; }
     case 'openFromSearch': rememberSearch(); S.back = 'search'; openRecipe(id); break;
     case 'shopCheck': toggleShop(el.dataset.k); break;
+    case 'ingOrder': S.ingOrder = v; store('ingOrder', v); render(); break;
+    case 'catEdit': S.catEdit = !S.catEdit; render(); break;
     case 'shopReset': resetShop(); break;
     case 'shopShare': shareShop(); break;
     case 'fav': toggleFav(id); break;
@@ -1644,6 +1726,7 @@ document.addEventListener('input', e => {
   if(e.target.id === 'tagQ'){ S.sheet.tq = e.target.value; renderSheet(); }
 });
 document.addEventListener('change', e => {
+  if(e.target.dataset && e.target.dataset.ingcat){ haptic(); setCategory(e.target.dataset.ingcat, e.target.value); return; }
   const f = e.target.files && e.target.files[0];
   if(!f) return;
   if(e.target.id === 'fFile') track(() => uploadPhoto(f));
@@ -1661,7 +1744,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Update-Prüfung ----------
 // GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
 // Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
-const APP_VERSION = '2026-09-27.4';
+const APP_VERSION = '2026-09-27.5';
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{

@@ -250,6 +250,16 @@ select.inp{appearance:none;-webkit-appearance:none}
 mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1px}
 [data-theme="dark"] mark{background:rgba(252,202,89,.35)}
 
+/* Filter */
+.filter-btn{gap:6px}
+.filter-btn .fcount{display:grid;place-items:center;min-width:20px;height:20px;border-radius:999px;background:#FCCA59;color:#12284A;font-size:12px;font-weight:700;padding:0 5px}
+.chip-x{margin-left:4px;font-size:11px;opacity:.7}
+.filter-body{flex:1;min-height:0;overflow-y:auto;padding:0 22px 8px;border-top:1px solid var(--ink)}
+.f-sec{padding:18px 0 4px;display:flex;flex-direction:column;gap:10px}
+.seg-sm button{height:38px;font-size:13px;padding:0 6px}
+.sheet-foot{display:flex;align-items:center;gap:16px;padding:14px 22px max(30px,calc(env(safe-area-inset-bottom) + 12px));border-top:1px solid var(--line)}
+.update-bar{position:absolute;left:22px;right:22px;bottom:104px;z-index:40;height:50px;border:none;border-radius:999px;background:#FCCA59;color:#12284A;font-size:15px;font-weight:600;box-shadow:0 10px 30px -10px rgba(18,40,74,.5);animation:up .4s cubic-bezier(.34,1.56,.64,1)}
+
 /* Einkaufsliste */
 .progress{height:8px;border-radius:999px;background:var(--seg);overflow:hidden}
 .progress div{height:100%;background:#2FA56B;border-radius:999px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
@@ -313,6 +323,7 @@ mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1
     <div id="tabs"></div>
     <div id="sheet"></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <button class="update-bar" id="updateBar" data-act="update" hidden>✨ Neue Version – tippen zum Aktualisieren</button>
   </div>
 </div>
 
@@ -368,7 +379,7 @@ const pad = n => String(n).padStart(2, '0');
 const S = {
   screen: 'home', rid: null,
   dark: stored('theme') ? stored('theme') === 'dark' : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches),
-  cat: 'Alle', q: '', sf: { time: null, fav: false, neu: false, tags: [] }, shopChecks: new Set(),
+  cat: 'Alle', q: '', sf: { time: null, kcal: null, fav: false, neu: false, tags: [], tagAny: false }, shopChecks: new Set(),
   serv: {}, tab: 'ingr', checked: {},
   favs: (() => { try{ return JSON.parse(stored('favs')) || []; }catch{ return []; } })(),
   weekOffset: 0, pday: (new Date().getDay() + 6) % 7,
@@ -628,7 +639,8 @@ function searchRecipes(){
     if(f.time && !(r.prep_time_minutes && r.prep_time_minutes <= f.time)) continue;
     if(f.fav && !S.favs.includes(r.id)) continue;
     if(f.neu && !isNew(r)) continue;
-    if(f.tags.length && !f.tags.every(t => tagsOf(r).includes(t))) continue;
+    if(f.kcal && !(r.calories_per_serving && r.calories_per_serving <= f.kcal)) continue;
+    if(f.tags.length && !(f.tagAny ? f.tags.some(t => tagsOf(r).includes(t)) : f.tags.every(t => tagsOf(r).includes(t)))) continue;
     let score = 0; const why = new Set(); let ok = true;
     const title = norm(r.title), tags = tagsOf(r), ings = r.ingredients || [];
     for(const t of tokens){
@@ -830,16 +842,30 @@ function homeListHTML(){
     ${list.length ? `<div class="grid">${cells}</div>` : empty}`;
 }
 
+function filterCount(){ const f = S.sf; return (f.time ? 1 : 0) + (f.kcal ? 1 : 0) + (f.fav ? 1 : 0) + (f.neu ? 1 : 0) + f.tags.length; }
+function allTags(){
+  const counts = {};
+  S.recipes.forEach(r => tagsOf(r).forEach(t => counts[t] = (counts[t] || 0) + 1));
+  return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'de'));
+}
+const SLIDERS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>';
 function searchHTML(){
-  const f = S.sf, cats = categories();
-  const chip = (on, act, v, label, sh, c) =>
-    `<button class="chip${on ? ' on' : ''}" data-act="${act}" data-v="${esc(v)}">${shape(sh, on ? 'var(--bg)' : c, 'width:14px;height:14px')}${esc(label)}</button>`;
-  const filters = [
-    chip(f.time === 20, 'sfTime', '20', '≤ 20 Min', 'sparkle', C.yellow),
-    chip(f.time === 45, 'sfTime', '45', '≤ 45 Min', 'star6', C.orange),
-    chip(f.fav, 'sfFav', '', 'Favoriten', 'flower', C.pink),
-    S.recipes.some(isNew) ? chip(f.neu, 'sfNew', '', 'Neu', 'sparkle', C.green) : '',
-    ...cats.map((t, i) => chip(f.tags.includes(t), 'sfTag', t, t, CAT_LOOK[i % CAT_LOOK.length][0], CAT_LOOK[i % CAT_LOOK.length][1])),
+  const f = S.sf, cnt = filterCount();
+  const x = (v, label) => `<button class="chip on" data-act="fClear" data-v="${esc(v)}">${esc(label)}<span class="chip-x">✕</span></button>`;
+  const quick = (act, v, label, sh, c) => `<button class="chip" data-act="${act}" data-v="${esc(v)}">${shape(sh, c, 'width:14px;height:14px')}${esc(label)}</button>`;
+  const bar = [
+    `<button class="chip filter-btn${cnt ? ' on' : ''}" data-act="fOpen">${SLIDERS}Filter${cnt ? `<span class="fcount">${cnt}</span>` : ''}</button>`,
+    f.time ? x('time', `≤ ${f.time} Min`) : '',
+    f.kcal ? x('kcal', `≤ ${f.kcal} kcal`) : '',
+    f.fav ? x('fav', 'Favoriten') : '',
+    f.neu ? x('neu', 'Neu') : '',
+    ...f.tags.map(t => x('tag:' + t, t)),
+    ...(cnt ? [] : [
+      quick('fTime', '20', '≤ 20 Min', 'sparkle', C.yellow),
+      quick('fKcal', '600', '≤ 600 kcal', 'star6', C.orange),
+      quick('sfFav', '', 'Favoriten', 'flower', C.pink),
+      S.recipes.some(isNew) ? quick('sfNew', '', 'Neu', 'sparkle', C.green) : '',
+    ]),
   ].join('');
   return `<div class="scroll" data-scroll style="padding-top:max(52px,calc(env(safe-area-inset-top) + 12px));padding-bottom:40px">
     <div class="search-top">
@@ -850,21 +876,21 @@ function searchHTML(){
         <button class="clear" data-act="sqClear" aria-label="Suche leeren" ${S.q ? '' : 'hidden'}>✕</button>
       </label>
     </div>
-    <div class="chips" style="padding-top:14px">${filters}</div>
+    <div class="chips" style="padding-top:14px">${bar}</div>
     <div id="searchBody">${searchBodyHTML()}</div>
   </div>`;
 }
 
 function searchBodyHTML(){
   const f = S.sf;
-  const active = S.q.trim() || f.time || f.fav || f.neu || f.tags.length;
+  const active = S.q.trim() || filterCount();
   if(!active){
     const rec = recent();
-    const cats = categories();
+    const cats = categories().slice(0, 8);
     return `
       ${rec.length ? `<div class="sec-head" style="padding-top:26px"><h2 class="serif" style="font-size:22px">Zuletzt gesucht</h2><button class="today-link" data-act="recentClear">Leeren</button></div>
         <div class="chips">${rec.map(q => `<button class="chip" data-act="sqSet" data-v="${esc(q)}">${shape('circle', 'var(--faint)', 'width:10px;height:10px')}${esc(q)}</button>`).join('')}</div>` : ''}
-      ${cats.length ? `<div class="sec-head" style="padding-top:26px"><h2 class="serif" style="font-size:22px">Stöbern</h2></div>
+      ${cats.length ? `<div class="sec-head" style="padding-top:26px"><h2 class="serif" style="font-size:22px">Stöbern</h2>${allTags().length > 8 ? `<button class="today-link" data-act="fOpen">Alle ${allTags().length} Tags</button>` : ''}</div>
         <div class="browse">${cats.map((t, i) => {
           const [sh, c] = CAT_LOOK[i % CAT_LOOK.length];
           const n = S.recipes.filter(r => tagsOf(r).includes(t)).length;
@@ -1191,9 +1217,47 @@ function tabsHTML(){
   }).join('')}</nav>`;
 }
 
+function sheetWrap(inner){
+  return `<div class="sheet-wrap"><div class="scrim" data-act="sheetClose"></div><div class="sheet" role="dialog" aria-modal="true"><div class="grabber"><span></span></div>${inner}</div></div>`;
+}
+function filterSheetHTML(){
+  const f = S.sf, n = searchRecipes().length;
+  const seg = (act, cur, opts) => `<div class="seg seg-sm">${opts.map(([v, l]) => `<button class="${cur === v ? 'on' : ''}" data-act="${act}" data-v="${v ?? ''}">${l}</button>`).join('')}</div>`;
+  const tq = norm(S.sheet.tq || '');
+  const tags = allTags()
+    .filter(([t]) => !tq || norm(t).includes(tq))
+    .sort((a, b) => f.tags.includes(b[0]) - f.tags.includes(a[0]));
+  const noKcal = S.recipes.filter(r => !r.calories_per_serving).length;
+  const toggle = (act, on, label, sh, c) => `<button class="chip${on ? ' on' : ''}" data-act="${act}">${shape(sh, on ? 'var(--bg)' : c, 'width:14px;height:14px')}${label}</button>`;
+  return `
+    <div class="sheet-head"><span class="kicker" style="font-size:14px">Filter</span><span class="st">Rezepte eingrenzen</span></div>
+    <div class="filter-body" data-sheet-scroll>
+      <div class="f-sec"><span class="sheet-label">Zubereitungszeit</span>
+        ${seg('fTime', f.time, [[null, 'Egal'], [20, '≤ 20 Min'], [45, '≤ 45 Min'], [90, '≤ 90 Min']])}</div>
+      <div class="f-sec"><span class="sheet-label">Kalorien pro Portion</span>
+        ${seg('fKcal', f.kcal, [[null, 'Egal'], [400, '≤ 400'], [600, '≤ 600'], [800, '≤ 800']])}
+        ${f.kcal && noKcal ? `<span class="hint">${noKcal} ${noKcal === 1 ? 'Rezept hat' : 'Rezepte haben'} noch keine Kalorienangabe und ${noKcal === 1 ? 'wird' : 'werden'} ausgeblendet.</span>` : ''}</div>
+      <div class="f-sec"><span class="sheet-label">Nur</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${toggle('sfFav', f.fav, 'Favoriten', 'flower', C.pink)}${toggle('sfNew', f.neu, 'Neu', 'sparkle', C.green)}</div></div>
+      <div class="f-sec">
+        <div class="row-between"><span class="sheet-label">Tags${f.tags.length ? ` · ${f.tags.length} gewählt` : ''}</span>
+          ${f.tags.length > 1 ? `<div class="seg seg-sm" style="width:auto"><button class="${f.tagAny ? '' : 'on'}" data-act="fTagMode" data-v="all">Alle</button><button class="${f.tagAny ? 'on' : ''}" data-act="fTagMode" data-v="any">Einer reicht</button></div>` : ''}</div>
+        <label class="search sheet-search" style="margin:10px 0 4px;height:44px">${shape('star8', 'var(--accent)', 'width:15px;height:15px;flex:none')}<input id="tagQ" type="search" value="${esc(S.sheet.tq || '')}" placeholder="Tag suchen" autocomplete="off" /></label>
+        ${tags.map(([t, c]) => {
+          const on = f.tags.includes(t);
+          return `<button class="pick" data-act="sfTag" data-v="${esc(t)}">${S.pop === 'tag:' + t ? `<span class="pop" style="display:grid">${mark(on)}</span>` : mark(on)}<span class="body"><span class="pt" style="font-size:17px">${esc(t)}</span></span><span class="pm">${c}</span></button>`;
+        }).join('') || '<p class="muted" style="padding:12px 0">Kein Tag gefunden.</p>'}
+      </div>
+    </div>
+    <div class="sheet-foot">
+      ${filterCount() ? '<button class="today-link" data-act="fReset">Zurücksetzen</button>' : ''}
+      <button class="cta" data-act="sheetClose" style="height:56px;font-size:16px;flex:1">${n} ${n === 1 ? 'Rezept' : 'Rezepte'} anzeigen</button>
+    </div>`;
+}
 function sheetHTML(){
   const sh = S.sheet;
   if(!sh) return '';
+  if(sh.mode === 'filter') return sheetWrap(filterSheetHTML());
   const dates = weekDates(S.weekOffset);
   const d = dates[sh.day], ds = toDateStr(d);
   const slot = SLOTS.find(x => x[0] === sh.slot);
@@ -1269,12 +1333,13 @@ function renderSheet(){
   const el = $('sheet');
   const list = el.querySelector('[data-sheet-scroll]');
   const keep = list ? list.scrollTop : 0;
-  const hadFocus = document.activeElement && document.activeElement.id === 'pickQ';
-  const pos = hadFocus ? document.activeElement.selectionStart : 0;
+  const act = document.activeElement;
+  const focusId = act && act.id && el.contains(act) ? act.id : null;
+  const pos = focusId ? act.selectionStart : 0;
   el.innerHTML = sheetHTML();
   const list2 = el.querySelector('[data-sheet-scroll]');
   if(list2) list2.scrollTop = keep;
-  if(hadFocus){ const q = $('pickQ'); q.focus(); q.setSelectionRange(pos, pos); }
+  if(focusId && $(focusId)){ const q = $(focusId); q.focus({ preventScroll: true }); q.setSelectionRange(pos, pos); }
   S.pop = null;
 }
 function renderSearchBody(){
@@ -1496,7 +1561,7 @@ async function deleteRecipe(){
 // ============================================================
 // Events
 // ============================================================
-const HAPTIC = new Set(['shopCheck','sfTime','sfFav','sfNew','sfTag','sqSet','refresh','theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
+const HAPTIC = new Set(['fOpen','fTime','fKcal','fTagMode','fReset','fClear','shopCheck','sfTime','sfFav','sfNew','sfTag','sqSet','refresh','theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
 document.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]');
   if(!el) return;
@@ -1516,10 +1581,20 @@ document.addEventListener('click', async e => {
     case 'sqClear': S.q = ''; $('sq').value = ''; $('sq').focus(); renderSearchBody(); break;
     case 'sqSet': S.q = v; $('sq').value = v; renderSearchBody(); break;
     case 'recentClear': store('recent', '[]'); renderSearchBody(); break;
-    case 'sfTime': S.sf.time = S.sf.time === Number(v) ? null : Number(v); render(); break;
+    case 'fOpen': if(S.screen !== 'search') go('search'); S.sheet = { mode: 'filter', tq: '' }; renderSheet(); break;
+    case 'fTime': S.sf.time = v === '' || S.sf.time === Number(v) ? null : Number(v); if(S.screen !== 'search') go('search'); else render(); break;
+    case 'fKcal': S.sf.kcal = v === '' || S.sf.kcal === Number(v) ? null : Number(v); if(S.screen !== 'search') go('search'); else render(); break;
+    case 'fTagMode': S.sf.tagAny = v === 'any'; render(); break;
+    case 'fReset': S.sf = { time: null, kcal: null, fav: false, neu: false, tags: [], tagAny: false }; render(); break;
+    case 'fClear':
+      if(v === 'time') S.sf.time = null; else if(v === 'kcal') S.sf.kcal = null;
+      else if(v === 'fav') S.sf.fav = false; else if(v === 'neu') S.sf.neu = false;
+      else if(v.startsWith('tag:')) S.sf.tags = S.sf.tags.filter(t => t !== v.slice(4));
+      render(); break;
+    case 'update': location.replace(location.pathname + '?v=' + Date.now()); break;
     case 'sfFav': S.sf.fav = !S.sf.fav; render(); break;
     case 'sfNew': S.sf.neu = !S.sf.neu; render(); break;
-    case 'sfTag': { const t = S.sf.tags; S.sf.tags = t.includes(v) ? t.filter(x => x !== v) : [...t, v]; if(S.screen !== 'search') go('search'); else render(); break; }
+    case 'sfTag': { const t = S.sf.tags; S.sf.tags = t.includes(v) ? t.filter(x => x !== v) : [...t, v]; S.pop = 'tag:' + v; if(S.screen !== 'search') go('search'); else render(); break; }
     case 'openFromSearch': rememberSearch(); S.back = 'search'; openRecipe(id); break;
     case 'shopCheck': toggleShop(el.dataset.k); break;
     case 'shopReset': resetShop(); break;
@@ -1566,6 +1641,7 @@ document.addEventListener('input', e => {
   if(e.target.id === 'fImage') setPhoto(e.target.value.trim());
   if(e.target.id === 'sq'){ S.q = e.target.value; renderSearchBody(); }
   if(e.target.id === 'pickQ'){ S.sheet.q = e.target.value; renderSheet(); }
+  if(e.target.id === 'tagQ'){ S.sheet.tq = e.target.value; renderSheet(); }
 });
 document.addEventListener('change', e => {
   const f = e.target.files && e.target.files[0];
@@ -1581,6 +1657,22 @@ document.addEventListener('keydown', e => {
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && S.screen === 'cook') requestWake();
 });
+
+// ---------- Update-Prüfung ----------
+// GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
+// Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
+const APP_VERSION = '2026-09-27.4';
+async function checkUpdate(){
+  if(!/^https?:/.test(location.protocol)) return;
+  try{
+    const t = await (await fetch(location.pathname + '?u=' + Date.now(), { cache: 'no-store' })).text();
+    const m = t.match(/const APP_VERSION = '([^']+)'/);
+    if(m && m[1] !== APP_VERSION) $('updateBar').hidden = false;
+  }catch{}
+}
+setTimeout(checkUpdate, 3000);
+setInterval(checkUpdate, 5 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') checkUpdate(); });
 
 render();
 loadRecipes();

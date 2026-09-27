@@ -16,6 +16,8 @@
 </script>
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="manifest.webmanifest" />
 <meta name="apple-mobile-web-app-title" content="drei Löffel" />
 <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
@@ -1236,7 +1238,12 @@ function sheetHTML(){
 function render(){
   clipId = 0;
   document.documentElement.dataset.theme = S.dark ? 'dark' : 'light';
-  $('themeColor').content = S.screen === 'cook' && byId(S.rid) ? look(byId(S.rid)).c : (S.dark ? '#0E1729' : '#F5F2EB');
+  // Bereich unter der Statusleiste in der Farbe des obersten Elements einfärben.
+  const cur = byId(S.rid);
+  const edge = (S.screen === 'cook' || S.screen === 'detail') && cur ? look(cur).c : '';
+  document.documentElement.style.backgroundColor = edge;
+  document.body.style.backgroundColor = edge;
+  $('themeColor').content = edge || (S.dark ? '#0E1729' : '#F5F2EB');
 
   const scr = $('screen');
   const key = S.screen + ':' + (S.rid || '');

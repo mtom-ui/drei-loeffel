@@ -377,7 +377,7 @@ const STEP_C = [C.yellow,C.pink,C.blue,C.orange,C.green];
 const STEP_S = ['scallop','flower','burst','clover','star6','spiky'];
 const WD = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 const WDL = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
-const SOURCE = {tiktok:'TikTok', instagram:'Instagram', photo:'Foto'};
+const SOURCE = {tiktok:'TikTok', instagram:'Instagram', photo:'Foto', other:'Andere Quelle'};
 const inkOn = c => (c === C.green || c === C.cobalt || c === C.ink) ? C.cream : C.ink;
 const pad = n => String(n).padStart(2, '0');
 
@@ -1744,7 +1744,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Update-Prüfung ----------
 // GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
 // Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
-const APP_VERSION = '2026-09-27.5';
+const APP_VERSION = '2026-09-27.6';
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{

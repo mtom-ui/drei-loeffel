@@ -1,10 +1,19 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>drei Löffel</title>
 <meta name="theme-color" content="#F5F2EB" id="themeColor" />
+<script>
+  // Theme vor dem ersten Zeichnen setzen, damit Safari oben nicht kurz hell aufblitzt.
+  try{
+    var t = localStorage.getItem('theme');
+    var d = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = d ? 'dark' : 'light';
+    document.getElementById('themeColor').content = d ? '#0E1729' : '#F5F2EB';
+  }catch(e){}
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="drei Löffel" />
@@ -17,7 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-html,body{margin:0;background:#E7E1D5;}
+html,body{margin:0;background:var(--bg);}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 button,input,textarea,select{font-family:inherit;color:inherit}
 button{cursor:pointer}
@@ -28,7 +37,8 @@ button{cursor:pointer}
 [data-theme="dark"]{--bg:#0E1729;--surface:#16213A;--ink:#F2EEE6;--line:rgba(242,238,230,.14);--muted:rgba(242,238,230,.72);--faint:rgba(242,238,230,.4);--seg:rgba(242,238,230,.09);--accent:#99B7F5;--outer:#060B15;--scrim:rgba(0,0,0,.6);color-scheme:dark}
 input::placeholder,textarea::placeholder{color:var(--faint)}
 
-#app{min-height:100dvh;display:flex;justify-content:center;align-items:flex-start;font-family:'Instrument Sans',system-ui,sans-serif;color:var(--ink);background:var(--outer)}
+#app{min-height:100dvh;display:flex;justify-content:center;align-items:flex-start;font-family:'Instrument Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+@media (min-width:520px){html,body,#app{background:var(--outer)}}
 .phone{position:relative;width:100%;max-width:430px;height:100dvh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
 @media (min-width:520px){.phone{height:844px;margin:32px 0;border-radius:46px;box-shadow:0 40px 90px -40px rgba(18,40,74,.45),0 0 0 1px rgba(18,40,74,.14)}}
 #screen{flex:1;min-height:0;display:flex;flex-direction:column}
@@ -209,10 +219,57 @@ select.inp{appearance:none;-webkit-appearance:none}
 .toast{position:absolute;left:50%;top:max(16px,calc(env(safe-area-inset-top) + 6px));z-index:50;transform:translate(-50%,-20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;transition:all .25s;max-width:calc(100% - 44px);text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:#C9423A;color:#fff}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.upload-veil{position:absolute;inset:0;display:grid;place-items:center;background:rgba(18,40,74,.45);color:#F5F2EB;font-weight:600;font-size:15px;z-index:2}
+.upload-veil svg{animation:spin 1.4s linear infinite}
+
+/* ---------- Animationen ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+@keyframes pop{0%{opacity:0;transform:scale(.6) rotate(-12deg)}60%{opacity:1;transform:scale(1.08) rotate(3deg)}100%{transform:none}}
+@keyframes boing{0%{transform:scale(1)}30%{transform:scale(.72) rotate(-14deg)}60%{transform:scale(1.22) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drift{0%,100%{transform:translate(-50%,-50%) rotate(12deg) scale(1)}50%{transform:translate(-50%,-50%) rotate(22deg) scale(1.04)}}
+@keyframes sway{0%,100%{transform:rotate(10deg)}50%{transform:rotate(24deg)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(28px)}}
+@keyframes slideBack{from{opacity:0;transform:translateX(-28px)}}
+@keyframes party{0%{transform:scale(0) rotate(-90deg)}60%{transform:scale(1.15) rotate(20deg)}100%{transform:scale(1) rotate(0)}}
+
+@media (prefers-reduced-motion:no-preference){
+  button{transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+  button:active{transform:scale(.94)}
+  .cell:active,.ing:active,.pick:active,.item .body:active,.fav-row .body:active{transform:scale(.98)}
+  .cell .art{transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+  .cell:hover .art{transform:rotate(-8deg) scale(1.04)}
+  .cell:active .art{transform:rotate(14deg) scale(.9)}
+  .featured > svg{animation:sway 9s ease-in-out infinite}
+  .hero > svg{animation:drift 12s ease-in-out infinite}
+  .empty > svg{animation:wiggle 2.4s ease-in-out infinite}
+
+  .enter .home-head,.enter .search,.enter .chips,.enter .sec-head,.enter .sheet-body,.enter .form,.enter .week-row,.enter h1,.enter .days{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+  .enter .search{animation-delay:.05s}
+  .enter .chips{animation-delay:.1s}
+  .enter .featured{animation:pop .6s cubic-bezier(.2,.8,.2,1) .12s both}
+  .enter .cell,.enter .fav-row,.enter .slot-block{animation:rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.15s + var(--i,0) * 55ms)}
+  .enter .cell .art{animation:pop .6s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(.2s + var(--i,0) * 55ms)}
+  .enter .hero > svg{animation:pop .7s cubic-bezier(.34,1.56,.64,1) both,drift 12s ease-in-out .7s infinite}
+  .enter .step-num{animation:pop .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(var(--i,0) * 60ms)}
+  .enter .cook-main{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+  .enter .dots span{animation:pop .4s cubic-bezier(.34,1.56,.64,1) both}
+  .tabs .pop svg,.pop{animation:boing .5s cubic-bezier(.34,1.56,.64,1)}
+  .pop-list > *{animation:rise .35s cubic-bezier(.2,.8,.2,1) both}
+  .step-fwd .cook-num{animation:pop .55s cubic-bezier(.34,1.56,.64,1) both}
+  .step-fwd .cook-text,.step-fwd .cook-timer{animation:slideIn .4s cubic-bezier(.2,.8,.2,1) both}
+  .step-back .cook-num{animation:pop .55s cubic-bezier(.34,1.56,.64,1) both}
+  .step-back .cook-text,.step-back .cook-timer{animation:slideBack .4s cubic-bezier(.2,.8,.2,1) both}
+  .cook-done > svg{animation:party .8s cubic-bezier(.34,1.56,.64,1) both,spin 18s linear .8s infinite}
+  .cook-timer.running b{animation:wiggle 1s ease-in-out infinite;display:inline-block}
+  .ing.done .n{transition:color .25s}
+}
 </style>
 </head>
 <body>
-<div id="app" data-theme="light">
+<div id="app">
   <div class="phone">
     <div id="screen"></div>
     <div id="tabs"></div>
@@ -391,10 +448,11 @@ async function loadRecipes(){
   S.recipes = data || [];
   S.recipes.forEach(r => (r.ingredients || []).sort((a, b) => a.position - b.position));
   S.favs = S.favs.filter(id => byId(id));
+  if(S.screen !== 'edit') S.anim = true;
   render();
 }
 
-async function loadPlan(){
+async function loadPlan(anim){
   const d = weekDates(S.weekOffset);
   const { data, error } = await sb.from('meal_plan')
     .select('id, plan_date, meal_time, recipe_id')
@@ -402,6 +460,7 @@ async function loadPlan(){
     .order('created_at', { ascending: true });
   if(error) return fail('Fehler beim Laden des Wochenplans', error);
   S.plan = (data || []).filter(e => e.recipe_id && byId(e.recipe_id));
+  if(anim) S.anim = true;
   render();
 }
 const planFor = (dateStr, meal) => S.plan.filter(e => e.plan_date === dateStr && e.meal_time === meal);
@@ -445,7 +504,7 @@ function homeHTML(){
       <div class="row-between">
         <div class="brand"><span class="serif">drei Löffel</span></div>
         <div style="display:flex;gap:8px">
-          <button class="circle-btn" data-act="theme" aria-label="Darstellung wechseln">${S.dark ? shape('burst', C.yellow, 'width:22px;height:22px') : shape('circle', 'var(--ink)', 'width:22px;height:22px')}</button>
+          <button class="circle-btn${S.pop === 'theme' ? ' pop' : ''}" data-act="theme" aria-label="Darstellung wechseln">${S.dark ? shape('burst', C.yellow, 'width:22px;height:22px') : shape('circle', 'var(--ink)', 'width:22px;height:22px')}</button>
           <button class="circle-btn solid" data-act="new" aria-label="Neues Rezept">+</button>
         </div>
       </div>
@@ -478,8 +537,8 @@ function homeListHTML(){
       <div class="fm">${esc(metaOf(r))}</div>
     </button>`;
   }
-  const cells = list.map(r => `
-    <button class="cell" data-act="open" data-id="${esc(r.id)}">
+  const cells = list.map((r, idx) => `
+    <button class="cell" data-act="open" data-id="${esc(r.id)}" style="--i:${Math.min(idx, 12)}">
       <div class="top"><span class="num">${numOf(r)}${SOURCE[r.source_type] ? ' · ' + SOURCE[r.source_type] : ''}</span>${S.favs.includes(r.id) ? shape('flower', C.pink, 'width:14px;height:14px') : ''}</div>
       ${art(r, 'art')}
       <span class="t">${esc(r.title)}</span>
@@ -510,13 +569,13 @@ function detailHTML(){
   const ingr = (r.ingredients || []).map(i => {
     const k = r.id + ':' + i.id, on = !!S.checked[k];
     return `<button class="ing${on ? ' done' : ''}" data-act="check" data-k="${esc(k)}">
-      ${mark(on)}<span class="n">${esc(i.name)}${i.note ? ` <span class="muted">(${esc(i.note)})</span>` : ''}</span><span class="a">${esc(amountOf(i, serv, r.servings))}</span>
+      ${S.pop === 'ing:' + k ? `<span class="pop" style="display:grid">${mark(on)}</span>` : mark(on)}<span class="n">${esc(i.name)}${i.note ? ` <span class="muted">(${esc(i.note)})</span>` : ''}</span><span class="a">${esc(amountOf(i, serv, r.servings))}</span>
     </button>`;
   }).join('');
   const stepsHTML = steps.map((s, i) => {
     const c = STEP_C[i % STEP_C.length], mins = minutesIn(s);
     return `<div class="step">
-      <div class="step-num">${shape(STEP_S[i % STEP_S.length], c)}<span style="color:${inkOn(c)}">${i + 1}</span></div>
+      <div class="step-num" style="--i:${Math.min(i, 10)}">${shape(STEP_S[i % STEP_S.length], c)}<span style="color:${inkOn(c)}">${i + 1}</span></div>
       <div style="display:flex;flex-direction:column;gap:6px;padding-top:8px"><p>${esc(s)}</p>${mins ? `<span class="timer">Timer · ${mins} Min</span>` : ''}</div>
     </div>`;
   }).join('');
@@ -527,13 +586,15 @@ function detailHTML(){
       <div class="hero" style="background:${L.c}">
         ${shape(L.s, L.c2, 'position:absolute;left:50%;top:52%;width:310px;height:310px;transform:translate(-50%,-50%) rotate(12deg)')}
         ${url ? `<img class="photo" src="${esc(url)}" alt="" onerror="this.remove()" />` : ''}
+        ${S.uploading ? `<div class="upload-veil">${shape('sparkle', C.yellow, 'width:48px;height:48px')}</div>` : ''}
         <div class="hero-bar">
           <button class="float-btn" data-act="home" aria-label="Zurück">←</button>
           <div style="display:flex;gap:8px">
+            <label class="float-btn" aria-label="Foto aufnehmen oder auswählen" style="cursor:pointer"><input type="file" accept="image/*" id="heroFile" class="vh" /><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></label>
             <button class="float-btn" data-act="edit" data-id="${esc(r.id)}" aria-label="Bearbeiten">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
             </button>
-            <button class="float-btn" data-act="fav" data-id="${esc(r.id)}" aria-label="${fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten'}">${flower(fav)}</button>
+            <button class="float-btn${S.pop === 'fav' ? ' pop' : ''}" data-act="fav" data-id="${esc(r.id)}" aria-label="${fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten'}">${flower(fav)}</button>
           </div>
         </div>
       </div>
@@ -543,7 +604,7 @@ function detailHTML(){
         ${r.description ? `<p class="desc">${esc(r.description)}</p>` : ''}
         ${src ? `<a class="source" href="${esc(src)}" target="_blank" rel="noopener noreferrer">Original auf ${SOURCE[r.source_type] || 'der Quelle'} ansehen ↗</a>` : ''}
         <div class="meta-grid">${meta.map(m => `<div><span class="v">${esc(m.v)}</span><span class="l">${esc(m.l)}</span></div>`).join('')}</div>
-        <button class="pill-btn" data-act="assign" style="margin-bottom:16px;${S.flash ? `background:${C.blue};color:${C.ink};` : ''}">${shape('star6', C.blue, 'width:18px;height:18px')}${esc(planLabel)}</button>
+        <button class="pill-btn${S.flash && S.pop === 'plan' ? ' pop' : ''}" data-act="assign" style="margin-bottom:16px;${S.flash ? `background:${C.blue};color:${C.ink};` : ''}">${shape('star6', C.blue, 'width:18px;height:18px')}${esc(planLabel)}</button>
         <div class="seg">
           <button class="${S.tab === 'ingr' ? 'on' : ''}" data-act="tab" data-v="ingr">Zutaten</button>
           <button class="${S.tab === 'steps' ? 'on' : ''}" data-act="tab" data-v="steps">Zubereitung</button>
@@ -553,7 +614,7 @@ function detailHTML(){
             <span class="lbl">Portionen</span>
             <div class="stepper">
               <button class="circle-btn" data-act="serv" data-v="-1" style="font-size:22px" aria-label="Weniger">−</button>
-              <span>${serv}</span>
+              <span class="${S.pop === 'serv' ? 'pop' : ''}">${serv}</span>
               <button class="circle-btn solid" data-act="serv" data-v="1" style="font-size:22px" aria-label="Mehr">+</button>
             </div>
           </div>
@@ -583,7 +644,7 @@ function cookHTML(){
     timerLabel = Math.floor(left / 60) + ':' + pad(left % 60);
     timerAction = S.left == null ? 'Timer starten' : S.running ? 'Pause' : left === 0 ? 'Zeit ist um · neu' : 'Weiter';
   }
-  return `<div class="cook" style="background:${L.c};color:${ink}">
+  return `<div class="cook${S.pop === 'fwd' ? ' step-fwd' : S.pop === 'back' ? ' step-back' : ''}" style="background:${L.c};color:${ink}">
     <div class="row-between" style="gap:12px">
       <button class="circle-btn ghost" data-act="closeCook" style="width:46px;height:46px;font-size:18px" aria-label="Schließen">✕</button>
       <span style="font-style:italic;font-size:15px;text-align:center;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.title)}</span>
@@ -594,14 +655,14 @@ function cookHTML(){
       <div class="cook-main">
         <div class="cook-num">${shape(STEP_S[step % STEP_S.length], c2)}<span style="color:${inkOn(c2)}">${step + 1}</span></div>
         <p class="cook-text">${esc(cur)}</p>
-        ${mins ? `<button class="cook-timer ghost" data-act="timer"><b>${timerLabel}</b><i>${timerAction}</i></button>` : ''}
+        ${mins ? `<button class="cook-timer ghost${S.running ? ' running' : ''}" data-act="timer"><b>${timerLabel}</b><i>${timerAction}</i></button>` : ''}
       </div>
       <div class="cook-nav">
         <button class="prev ghost" data-act="prev" style="opacity:${step > 0 ? 1 : .35}" aria-label="Zurück">←</button>
         <button class="next" data-act="next" style="background:${ink};color:${L.c}">${step === n - 1 ? 'Fertig' : 'Nächster Schritt'}</button>
       </div>
     ` : `
-      <div class="cook-main" style="align-items:center;text-align:center;gap:18px">
+      <div class="cook-main cook-done" style="align-items:center;text-align:center;gap:18px">
         ${shape('burst', c2, 'width:200px;height:200px')}
         <div class="serif" style="font-size:44px;line-height:1">Guten Appetit!</div>
         <div style="font-size:16px">${esc(r.title)} ist fertig.</div>
@@ -618,12 +679,12 @@ function planHTML(){
   const days = dates.map((d, i) => {
     const ds = toDateStr(d), on = i === S.pday;
     const dots = SLOTS.filter(([k]) => planFor(ds, k).length).map(sl => `<span style="background:${sl[3]}"></span>`).join('');
-    return `<button class="${on ? 'on' : ''}" data-act="day" data-i="${i}">
+    return `<button class="${on ? 'on' : ''}${on && S.pop === 'day' ? ' pop' : ''}" data-act="day" data-i="${i}">
       <span class="wd">${ds === todayStr ? 'heute' : WD[i]}</span><span class="dt">${d.getDate()}</span><div class="dots">${dots}</div>
     </button>`;
   }).join('');
   const sel = dates[S.pday], selStr = toDateStr(sel);
-  const slots = SLOTS.map(([k, label, sh, c]) => {
+  const slots = SLOTS.map(([k, label, sh, c], si) => {
     const entries = planFor(selStr, k);
     const items = entries.map(e => {
       const r = byId(e.recipe_id);
@@ -633,7 +694,7 @@ function planHTML(){
         <button class="x" data-act="planRemove" data-id="${esc(e.id)}" aria-label="Entfernen">✕</button>
       </div>`;
     }).join('');
-    return `<div style="margin-top:20px">
+    return `<div class="slot-block${S.pop === 'day' ? ' pop-list' : ''}" style="margin-top:20px;--i:${si}">
       <div class="slot-head">${shape(sh, c, 'width:22px;height:22px;flex:none')}<span class="sl">${label}</span>
         <span class="sc">${entries.length ? entries.length + (entries.length === 1 ? ' Gericht' : ' Gerichte') : ''}</span></div>
       ${items}
@@ -662,7 +723,7 @@ function planHTML(){
 
 function favHTML(){
   const list = S.recipes.filter(r => S.favs.includes(r.id));
-  const rows = list.map(r => `<div class="fav-row">
+  const rows = list.map((r, idx) => `<div class="fav-row" style="--i:${Math.min(idx, 12)}">
     ${thumb(r, 78, 22, `data-act="open" data-id="${esc(r.id)}"`)}
     <button class="body" data-act="open" data-id="${esc(r.id)}"><span class="ft">${esc(r.title)}</span><span class="fm">${esc(metaOf(r))}</span></button>
     <button class="circle-btn" data-act="fav" data-id="${esc(r.id)}" style="border:none" aria-label="Entfernen">${flower(true)}</button>
@@ -694,7 +755,7 @@ function editHTML(){
 
         <div class="photo-drop" id="photoDrop">
           <img id="photoPreview" alt="" ${url ? `src="${esc(url)}"` : 'hidden'} />
-          <div id="photoHint" ${url ? 'hidden' : ''} style="display:flex;flex-direction:column;align-items:center;gap:8px">${shape('sparkle', C.yellow, 'width:40px;height:40px')}Foto hinzufügen</div>
+          <div id="photoHint" ${url ? 'hidden' : ''} style="display:flex;flex-direction:column;align-items:center;gap:8px">${shape('sparkle', C.yellow, 'width:40px;height:40px')}Foto aufnehmen oder auswählen</div>
           <span class="chg" id="photoChg" ${url ? '' : 'hidden'}>Ändern</span>
           <input type="file" id="fFile" accept="image/*" aria-label="Foto hochladen" />
         </div>
@@ -740,7 +801,7 @@ function tabsHTML(){
   const defs = [['home','Entdecken','sparkle',C.yellow],['plan','Planen','star6',C.blue],['fav','Favoriten','flower',C.pink]];
   return `<nav class="tabs">${defs.map(([k, label, sh, c]) => {
     const on = S.screen === k;
-    return `<button data-act="go" data-v="${k}" aria-current="${on ? 'page' : 'false'}">
+    return `<button class="${on && S.tabPop ? 'pop' : ''}" data-act="go" data-v="${k}" aria-current="${on ? 'page' : 'false'}">
       <svg viewBox="-6 -6 112 112" style="width:26px;height:26px"><path d="${SH[sh]}" stroke-width="6" stroke-linejoin="round" fill-rule="evenodd" style="fill:${on ? c : 'transparent'};stroke:var(--ink)"></path></svg>
       <span style="opacity:${on ? 1 : .6}">${label}</span>
     </button>`;
@@ -767,7 +828,7 @@ function sheetHTML(){
           return `<button class="pick" data-act="pickToggle" data-id="${esc(r.id)}">
             ${thumb(r, 48, 14).replace('<button', '<span').replace(/<\/button>\s*$/, '</span>')}
             <span class="body"><span class="pt">${esc(r.title)}</span><span class="pm">${esc(metaOf(r))}</span></span>
-            ${mark(on, 26)}
+            ${S.pop === 'pick:' + r.id ? `<span class="pop" style="display:grid">${mark(on, 26)}</span>` : mark(on, 26)}
           </button>`;
         }).join('') || `<p class="muted" style="text-align:center;padding:24px 0">${S.recipes.length ? 'Nichts gefunden.' : 'Noch keine Rezepte.'}</p>`}
       </div>
@@ -779,7 +840,7 @@ function sheetHTML(){
       <div class="sheet-head"><span class="kicker" style="font-size:14px">${esc(r.title)}</span><span class="st">In den Wochenplan</span></div>
       <div style="padding:0 22px 6px;display:flex;flex-direction:column;gap:10px">
         <span class="sheet-label">Tag${S.weekOffset ? ` · KW ${isoWeek(dates[0])}` : ''}</span>
-        <div class="day-pick">${dates.map((x, i) => `<button class="${i === sh.day ? 'on' : ''}" data-act="sheetDay" data-i="${i}"><span style="font-size:11px;font-style:italic">${WD[i]}</span><span class="serif" style="font-size:18px;line-height:1">${x.getDate()}</span></button>`).join('')}</div>
+        <div class="day-pick">${dates.map((x, i) => `<button class="${i === sh.day ? 'on' : ''}${i === sh.day && S.pop === 'sheet' ? ' pop' : ''}" data-act="sheetDay" data-i="${i}"><span style="font-size:11px;font-style:italic">${WD[i]}</span><span class="serif" style="font-size:18px;line-height:1">${x.getDate()}</span></button>`).join('')}</div>
         <span class="sheet-label" style="margin-top:8px">Mahlzeit</span>
         <div class="seg">${SLOTS.map(([k, label]) => `<button class="${k === sh.slot ? 'on' : ''}" data-act="sheetSlot" data-v="${k}" style="font-size:14px">${label}</button>`).join('')}</div>
       </div>
@@ -793,8 +854,7 @@ function sheetHTML(){
 // ============================================================
 function render(){
   clipId = 0;
-  const app = $('app');
-  app.dataset.theme = S.dark ? 'dark' : 'light';
+  document.documentElement.dataset.theme = S.dark ? 'dark' : 'light';
   $('themeColor').content = S.screen === 'cook' && byId(S.rid) ? look(byId(S.rid)).c : (S.dark ? '#0E1729' : '#F5F2EB');
 
   const scr = $('screen');
@@ -802,14 +862,17 @@ function render(){
   const sc = scr.querySelector('[data-scroll]');
   const keep = scr.dataset.key === key && sc ? sc.scrollTop : 0;
   if(S.screen === 'edit' && scr.dataset.key === key) return;
+  const entering = scr.dataset.key !== key || S.anim;
   const html = { home: homeHTML, detail: detailHTML, cook: cookHTML, plan: planHTML, fav: favHTML, edit: editHTML }[S.screen]();
   scr.innerHTML = html;
   scr.dataset.key = S.screen + ':' + (S.rid || '');
+  if(entering && scr.firstElementChild) scr.firstElementChild.classList.add('enter');
   const sc2 = scr.querySelector('[data-scroll]');
   if(sc2) sc2.scrollTop = keep;
 
   $('tabs').innerHTML = ['home', 'plan', 'fav'].includes(S.screen) ? tabsHTML() : '';
   renderSheet();
+  S.pop = null; S.anim = false; S.tabPop = false;
 }
 function renderSheet(){
   const el = $('sheet');
@@ -821,6 +884,7 @@ function renderSheet(){
   const list2 = el.querySelector('[data-sheet-scroll]');
   if(list2) list2.scrollTop = keep;
   if(hadFocus){ const q = $('pickQ'); q.focus(); q.setSelectionRange(pos, pos); }
+  S.pop = null;
 }
 function renderHomeList(){
   const el = $('homeList');
@@ -833,27 +897,71 @@ function renderHomeList(){
 function stopTimer(){ clearInterval(timerIv); timerIv = null; S.left = null; S.running = false; }
 function go(screen, extra){
   if(S.screen === 'cook' && screen !== 'cook') releaseWake();
+  S.tabPop = S.screen !== screen;
   Object.assign(S, { screen, sheet: null }, extra || {});
   const sc = $('screen').querySelector('[data-scroll]');
   $('screen').dataset.key = '';
   if(sc) sc.scrollTop = 0;
   render();
-  if(screen === 'plan') loadPlan();
+  if(screen === 'plan') loadPlan(true);
 }
 function openRecipe(id){ stopTimer(); go('detail', { rid: id, tab: 'ingr', flash: null }); }
 function toggleFav(id){
   S.favs = S.favs.includes(id) ? S.favs.filter(x => x !== id) : [id, ...S.favs];
   store('favs', JSON.stringify(S.favs));
+  S.pop = 'fav';
   render();
 }
 async function requestWake(){ try{ wakeLock = await navigator.wakeLock?.request('screen'); }catch{} }
 function releaseWake(){ try{ wakeLock?.release(); }catch{} wakeLock = null; }
+
+// ---------- Haptik & Ton ----------
+// iOS Safari kennt navigator.vibrate nicht. Seit iOS 18 löst das Umschalten eines
+// <input switch> aber ein haptisches Tippen aus – das nutzen wir unsichtbar.
+const hapticSwitch = (() => {
+  const label = document.createElement('label');
+  label.className = 'vh'; label.setAttribute('aria-hidden', 'true');
+  const input = document.createElement('input');
+  input.type = 'checkbox'; input.setAttribute('switch', ''); input.tabIndex = -1;
+  label.appendChild(input); document.body.appendChild(label);
+  return label;
+})();
+function haptic(){
+  try{
+    if(navigator.vibrate) navigator.vibrate(12);
+    else hapticSwitch.click();
+  }catch{}
+}
+let audioCtx = null;
+function unlockAudio(){
+  try{ audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume(); }catch{}
+}
+function chime(){
+  if(!audioCtx) return;
+  const t0 = audioCtx.currentTime;
+  [[880, 0], [1175, .18], [1568, .36], [1175, .9], [1568, 1.08], [2093, 1.26]].forEach(([f, dt]) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t0 + dt);
+    g.gain.linearRampToValueAtTime(.25, t0 + dt + .02);
+    g.gain.exponentialRampToValueAtTime(.001, t0 + dt + .5);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(t0 + dt); o.stop(t0 + dt + .55);
+  });
+}
+
 function tick(){
   S.left = (S.left || 0) - 1;
-  if(S.left <= 0){ S.left = 0; S.running = false; clearInterval(timerIv); timerIv = null; try{ navigator.vibrate?.([300, 150, 300]); }catch{} }
+  if(S.left <= 0){
+    S.left = 0; S.running = false; clearInterval(timerIv); timerIv = null;
+    chime();
+    try{ navigator.vibrate?.([300, 150, 300]); }catch{}
+    toast('⏰ Zeit ist um!');
+  }
   render();
 }
 function timerToggle(){
+  unlockAudio();
   if(S.running){ clearInterval(timerIv); timerIv = null; S.running = false; return render(); }
   const r = byId(S.rid), { steps } = parseSteps(r.instructions);
   const mins = minutesIn(steps[S.step] || '');
@@ -868,24 +976,66 @@ function openEditor(id){
   const r = id ? byId(id) : null;
   const rows = $('ingRows');
   rows.innerHTML = (r && r.ingredients && r.ingredients.length ? r.ingredients : [null, null, null]).map(ingRowHTML).join('');
-  $('fFile').addEventListener('change', e => { if(e.target.files[0]) uploadPhoto(e.target.files[0]); });
-  $('fImage').addEventListener('input', e => setPhoto(e.target.value.trim()));
 }
 function setPhoto(url){
   const u = safeUrl(url);
   $('photoPreview').hidden = !u; $('photoChg').hidden = !u; $('photoHint').hidden = !!u;
   if(u) $('photoPreview').src = u; else $('photoPreview').removeAttribute('src');
 }
-async function uploadPhoto(file){
-  const st = $('uploadStatus');
-  st.textContent = 'Lade hoch…';
-  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+// Handyfotos (oft 3–8 MB) vor dem Upload auf max. 1600 px / JPEG verkleinern.
+async function shrinkImage(file){
+  try{
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    bmp.close?.();
+    const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', .84));
+    return blob && blob.size < file.size ? blob : file;
+  }catch{
+    return file;
+  }
+}
+async function storePhoto(file){
+  const img = await shrinkImage(file);
+  const ext = img.type === 'image/jpeg' ? 'jpg' : ((file.name.split('.').pop() || 'jpg').toLowerCase());
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await sb.storage.from('recipe-photos').upload(path, file);
-  if(error){ st.textContent = ''; return fail('Fehler beim Hochladen', error); }
-  const { data } = sb.storage.from('recipe-photos').getPublicUrl(path);
-  $('fImage').value = data.publicUrl; setPhoto(data.publicUrl);
-  st.textContent = 'Foto hochgeladen ✓';
+  const { error } = await sb.storage.from('recipe-photos').upload(path, img, { contentType: img.type || 'image/jpeg' });
+  if(error) throw error;
+  return sb.storage.from('recipe-photos').getPublicUrl(path).data.publicUrl;
+}
+async function uploadPhoto(file){
+  const st = $('uploadStatus'), drop = $('photoDrop');
+  st.textContent = 'Lade hoch…';
+  drop.insertAdjacentHTML('beforeend', `<div class="upload-veil">${shape('sparkle', C.yellow, 'width:40px;height:40px')}</div>`);
+  try{
+    const url = await storePhoto(file);
+    $('fImage').value = url; setPhoto(url);
+    st.textContent = 'Foto hochgeladen ✓';
+    haptic();
+  }catch(e){
+    st.textContent = '';
+    fail('Fehler beim Hochladen', e);
+  }finally{
+    drop.querySelector('.upload-veil')?.remove();
+  }
+}
+async function uploadHeroPhoto(file){
+  const id = S.rid;
+  S.uploading = true; render();
+  try{
+    const url = await storePhoto(file);
+    const { error } = await sb.from('recipes').update({ image_url: url }).eq('id', id);
+    if(error) throw error;
+    const r = byId(id); if(r) r.image_url = url;
+    toast('Foto gespeichert');
+    haptic();
+  }catch(e){
+    fail('Fehler beim Hochladen', e);
+  }finally{
+    S.uploading = false; S.anim = true; render();
+  }
 }
 async function saveRecipe(){
   const title = $('fTitle').value.trim();
@@ -953,12 +1103,14 @@ async function deleteRecipe(){
 // ============================================================
 // Events
 // ============================================================
+const HAPTIC = new Set(['theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
 document.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]');
   if(!el) return;
   const act = el.dataset.act, v = el.dataset.v, id = el.dataset.id;
+  if(HAPTIC.has(act)) haptic();
   switch(act){
-    case 'theme': S.dark = !S.dark; store('theme', S.dark ? 'dark' : 'light'); render(); break;
+    case 'theme': S.dark = !S.dark; store('theme', S.dark ? 'dark' : 'light'); S.pop = 'theme'; render(); break;
     case 'new': openEditor(); break;
     case 'edit': openEditor(id); break;
     case 'closeEdit': S.rid ? openRecipe(S.rid) : go('home'); break;
@@ -968,31 +1120,32 @@ document.addEventListener('click', async e => {
     case 'go': go(v); break;
     case 'fav': toggleFav(id); break;
     case 'tab': S.tab = v; render(); break;
-    case 'serv': { const r = byId(S.rid); const cur = S.serv[r.id] ?? r.servings; S.serv[r.id] = Math.min(24, Math.max(1, cur + Number(v))); render(); break; }
-    case 'check': S.checked[el.dataset.k] = !S.checked[el.dataset.k]; render(); break;
+    case 'serv': { const r = byId(S.rid); const cur = S.serv[r.id] ?? r.servings; S.serv[r.id] = Math.min(24, Math.max(1, cur + Number(v))); S.pop = 'serv'; render(); break; }
+    case 'check': S.checked[el.dataset.k] = !S.checked[el.dataset.k]; S.pop = 'ing:' + el.dataset.k; render(); break;
     case 'cook': stopTimer(); go('cook', { step: 0 }); requestWake(); break;
     case 'closeCook': stopTimer(); go('detail'); break;
-    case 'prev': if(S.step > 0){ stopTimer(); S.step--; render(); } break;
-    case 'next': stopTimer(); S.step++; render(); break;
+    case 'prev': if(S.step > 0){ stopTimer(); S.step--; S.pop = 'back'; render(); } break;
+    case 'next': stopTimer(); S.step++; S.pop = 'fwd'; render(); break;
     case 'timer': timerToggle(); break;
-    case 'week': S.weekOffset = v === '0' ? 0 : S.weekOffset + Number(v); if(v === '0') S.pday = (new Date().getDay() + 6) % 7; render(); loadPlan(); break;
-    case 'day': S.pday = Number(el.dataset.i); render(); break;
+    case 'week': S.weekOffset = v === '0' ? 0 : S.weekOffset + Number(v); if(v === '0') S.pday = (new Date().getDay() + 6) % 7; render(); loadPlan(true); break;
+    case 'day': S.pday = Number(el.dataset.i); S.pop = 'day'; render(); break;
     case 'planRemove': planRemove(id); break;
     case 'pick': S.sheet = { mode: 'pick', day: S.pday, slot: v, q: '' }; renderSheet(); break;
     case 'pickToggle': {
       const ds = toDateStr(weekDates(S.weekOffset)[S.sheet.day]);
       const hit = planFor(ds, S.sheet.slot).find(x => x.recipe_id === id);
+      S.pop = 'pick:' + id;
       hit ? await planRemove(hit.id) : await planAdd(ds, S.sheet.slot, id);
       break;
     }
     case 'assign': S.sheet = { mode: 'assign', day: S.weekOffset === 0 ? (new Date().getDay() + 6) % 7 : 0, slot: 'dinner' }; await loadPlan(); break;
-    case 'sheetDay': S.sheet.day = Number(el.dataset.i); renderSheet(); break;
+    case 'sheetDay': S.sheet.day = Number(el.dataset.i); S.pop = 'sheet'; renderSheet(); break;
     case 'sheetSlot': S.sheet.slot = v; renderSheet(); break;
     case 'assignConfirm': {
       const sh = S.sheet, ds = toDateStr(weekDates(S.weekOffset)[sh.day]);
       const slotLabel = SLOTS.find(x => x[0] === sh.slot)[1];
       if(!planFor(ds, sh.slot).some(x => x.recipe_id === S.rid)) await planAdd(ds, sh.slot, S.rid);
-      S.sheet = null; S.flash = WD[sh.day] + ' · ' + slotLabel; render();
+      S.sheet = null; S.flash = WD[sh.day] + ' · ' + slotLabel; S.pop = 'plan'; render();
       clearTimeout(flashT); flashT = setTimeout(() => { S.flash = null; if(S.screen === 'detail') render(); }, 2000);
       break;
     }
@@ -1004,8 +1157,16 @@ document.addEventListener('click', async e => {
   }
 });
 document.addEventListener('input', e => {
+  if(e.target.id === 'fImage') setPhoto(e.target.value.trim());
   if(e.target.id === 'q'){ S.q = e.target.value; renderHomeList(); }
   if(e.target.id === 'pickQ'){ S.sheet.q = e.target.value; renderSheet(); }
+});
+document.addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  if(e.target.id === 'fFile') uploadPhoto(f);
+  if(e.target.id === 'heroFile') uploadHeroPhoto(f);
+  e.target.value = '';
 });
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape' && S.sheet){ S.sheet = null; renderSheet(); }

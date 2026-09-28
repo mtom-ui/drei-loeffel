@@ -73,12 +73,33 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:0 22px 4px}
 .chip{flex:none;display:flex;align-items:center;gap:7px;height:42px;padding:0 16px;border-radius:999px;border:1.5px solid var(--ink);background:transparent;font-size:14px;font-weight:500}
 .chip.on{background:var(--ink);color:var(--bg)}
-.featured{margin:22px 22px 30px;border-radius:30px;position:relative;overflow:hidden;height:230px;padding:22px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;cursor:pointer;border:none;width:calc(100% - 44px);text-align:left}
-.featured .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.featured .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,40,74,0) 30%,rgba(18,40,74,.72))}
 .badge{position:relative;align-self:flex-start;background:#F5F2EB;color:#12284A;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
-.featured .ft{position:relative;font-family:Gloock,serif;font-size:34px;line-height:1.05}
-.featured .fm{position:relative;font-size:14px}
+.shuffle-cta{margin:22px 22px 30px;width:calc(100% - 44px);height:156px;border:none;border-radius:30px;background:var(--ink);color:var(--bg);position:relative;overflow:hidden;display:flex;align-items:center;padding:22px;text-align:left}
+.sh-text{position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;max-width:56%}
+.sh-text .badge{background:#FCCA59}
+.sh-text .ft{font-family:Gloock,serif;font-size:28px;line-height:1.05}
+.sh-text .fm{font-size:13px;opacity:.75}
+.sh-stack{position:absolute;right:26px;top:50%;width:132px;height:112px;transform:translateY(-50%)}
+.sh-stack span{position:absolute;top:4px;right:var(--x);width:78px;height:104px;border-radius:14px;overflow:hidden;border:2px solid var(--bg);transform:rotate(var(--r));box-shadow:0 8px 20px -8px rgba(0,0,0,.5);display:grid;place-items:center}
+.sh-stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* Shuffle */
+.shuffle{flex:1;min-height:0;display:flex;flex-direction:column;padding-bottom:max(22px,calc(env(safe-area-inset-bottom) + 8px))}
+.deck{position:relative;flex:1;min-height:0;margin:16px 22px 0}
+.swipe-card{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--surface);border:1.5px solid var(--ink);border-radius:30px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;will-change:transform;cursor:grab}
+.swipe-card.under{transform:scale(.94) translateY(16px);opacity:.6;pointer-events:none}
+.sc-media{position:relative;flex:1;min-height:0;display:grid;place-items:center;overflow:hidden}
+.sc-media > svg{width:68%;height:68%}
+.sc-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.sc-badge{position:absolute;top:16px;left:16px;z-index:1}
+.sc-body{flex:none;padding:16px 20px 20px;display:flex;flex-direction:column;gap:6px;border-top:1.5px solid var(--ink)}
+.sc-title{font-family:Gloock,serif;font-size:30px;line-height:1.05;text-wrap:balance;overflow-wrap:anywhere}
+.sc-desc{margin:0;font-size:15px;line-height:1.45;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sc-meta{font-size:13px;color:var(--muted)}
+.deck-actions{display:flex;gap:10px;align-items:center;padding:16px 22px 0}
+.deck-actions .cta{flex:1;height:56px;font-size:16px}
+.deck-actions .circle-btn{width:56px;height:56px;font-size:20px}
+.deck-hint{text-align:center;font-size:12px;font-style:italic;color:var(--faint);margin:10px 0 0}
 .sec-head{display:flex;align-items:baseline;justify-content:space-between;padding:22px 22px 12px}
 .sec-head h2{font-size:26px;margin:0}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--ink);border-left:1px solid var(--ink);margin:0 22px}
@@ -87,6 +108,9 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .cell .top{display:flex;justify-content:space-between;align-items:center;height:16px}
 .cell .num{font-style:italic;font-size:12px;color:var(--accent)}
 .cell .art{width:74%;aspect-ratio:1;align-self:center;margin:6px 0 8px;display:block}
+.cell .photo-art{position:relative;width:100%;aspect-ratio:1;margin:6px 0 8px;border-radius:18px;overflow:hidden;display:grid;place-items:center}
+.photo-art > svg{width:74%;height:74%}
+.photo-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cell .t{font-family:Gloock,serif;font-size:18px;line-height:1.1;text-wrap:balance;overflow-wrap:anywhere}
 .cell .m{font-size:12px;color:var(--muted)}
 .skel{height:230px;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);animation:pulse 1.2s ease-in-out infinite;background:var(--seg)}
@@ -288,6 +312,7 @@ mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 @keyframes slideIn{from{opacity:0;transform:translateX(28px)}}
 @keyframes slideBack{from{opacity:0;transform:translateX(-28px)}}
+@keyframes cardIn{from{transform:scale(.94) translateY(16px);opacity:.6}}
 @keyframes party{0%{transform:scale(0) rotate(-90deg)}60%{transform:scale(1.15) rotate(20deg)}100%{transform:scale(1) rotate(0)}}
 
 @media (prefers-reduced-motion:no-preference){
@@ -297,14 +322,20 @@ mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1
   .cell .art{transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
   .cell:hover .art{transform:rotate(-8deg) scale(1.04)}
   .cell:active .art{transform:rotate(14deg) scale(.9)}
-  .featured > svg{animation:sway 9s ease-in-out infinite}
+  .cell:hover .photo-art{transform:scale(1.02)}
+  .cell:active .photo-art{transform:scale(.97)}
+  .sh-stack span{transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+  .shuffle-cta:hover .sh-stack span{transform:rotate(calc(var(--r) * 1.6)) translateY(-4px)}
+  .swipe-card.in{animation:cardIn .32s cubic-bezier(.2,.8,.2,1)}
   .hero > svg{animation:drift 12s ease-in-out infinite}
   .empty > svg{animation:wiggle 2.4s ease-in-out infinite}
 
   .enter .home-head,.enter .search,.enter .chips,.enter .sec-head,.enter .sheet-body,.enter .form,.enter .week-row,.enter h1,.enter .days{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
   .enter .search{animation-delay:.05s}
   .enter .chips{animation-delay:.1s}
-  .enter .featured{animation:pop .6s cubic-bezier(.2,.8,.2,1) .12s both}
+  .enter .shuffle-cta{animation:pop .6s cubic-bezier(.2,.8,.2,1) .12s both}
+  .enter .cell .photo-art{animation:rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.2s + var(--i,0) * 55ms)}
+  .enter .swipe-card.top{animation:pop .55s cubic-bezier(.34,1.56,.64,1) both}
   .enter .cell,.enter .fav-row,.enter .slot-block{animation:rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.15s + var(--i,0) * 55ms)}
   .enter .cell .art{animation:pop .6s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(.2s + var(--i,0) * 55ms)}
   .enter .hero > svg{animation:pop .7s cubic-bezier(.34,1.56,.64,1) both,drift 12s ease-in-out .7s infinite}
@@ -392,7 +423,7 @@ const S = {
   favs: (() => { try{ return JSON.parse(stored('favs')) || []; }catch{ return []; } })(),
   weekOffset: 0, pday: (new Date().getDay() + 6) % 7,
   sheet: null, step: 0, left: null, running: false, flash: null,
-  recipes: [], loading: true, plan: [],
+  recipes: [], loading: true, plan: [], deck: null, di: 0,
 };
 let timerIv = null, flashT = null, toastT = null, wakeLock = null, clipId = 0;
 
@@ -473,14 +504,17 @@ function mark(on, size = 24){
 function flower(filled, size = 24){
   return `<svg viewBox="-6 -6 112 112" style="width:${size}px;height:${size}px" aria-hidden="true"><path d="${SH.flower}" stroke-width="7" stroke-linejoin="round" style="fill:${filled ? C.pink : 'transparent'};stroke:var(--ink)"></path></svg>`;
 }
-// Rezept-Illustration: Form in Rezeptfarbe, mit Foto darin, falls vorhanden
-function art(r, cls){
-  const L = look(r), url = safeUrl(r.image_url), id = 'k' + (++clipId);
-  return `<svg class="${cls}" viewBox="0 0 100 100" aria-hidden="true">
-    ${url ? `<defs><clipPath id="${id}" clip-rule="evenodd"><path d="${SH[L.s]}" clip-rule="evenodd"></path></clipPath></defs>` : ''}
-    <path d="${SH[L.s]}" fill-rule="evenodd" style="fill:${L.c}"></path>
-    ${url ? `<image href="${esc(url)}" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id})" onerror="this.remove()"></image>` : ''}
-  </svg>`;
+// Rezept-Illustration: mit Foto einfach das Foto, sonst Form in Rezeptfarbe
+// (die Form liegt auch unter dem Foto, falls es nicht lädt).
+function art(r){
+  const L = look(r), url = safeUrl(r.image_url);
+  if(url){
+    return `<div class="photo-art" style="background:${L.c}" aria-hidden="true">
+      ${shape(L.s, L.c2)}
+      <img src="${esc(url)}" alt="" loading="lazy" onerror="this.remove()" />
+    </div>`;
+  }
+  return `<svg class="art" viewBox="0 0 100 100" aria-hidden="true"><path d="${SH[L.s]}" fill-rule="evenodd" style="fill:${L.c}"></path></svg>`;
 }
 function thumb(r, size, radius = 16, act = ''){
   const L = look(r), url = safeUrl(r.image_url);
@@ -869,34 +903,126 @@ function homeListHTML(){
     return `<div class="sec-head"><h2 class="serif">Alle Rezepte</h2></div><div class="grid">${'<div class="skel"></div>'.repeat(4)}</div>`;
   }
   const list = homeFiltered();
-  let featured = '';
-  if(S.cat === 'Alle' && S.recipes.length){
-    const start = new Date(new Date().getFullYear(), 0, 0);
-    const r = S.recipes[Math.floor((new Date() - start) / 864e5) % S.recipes.length];
-    const L = look(r), url = safeUrl(r.image_url), ink = url ? C.cream : inkOn(L.c);
-    featured = `<button class="featured" data-act="open" data-id="${esc(r.id)}" style="background:${L.c};color:${ink}">
-      ${shape(L.s, L.c2, 'position:absolute;right:-56px;top:-60px;width:250px;height:250px;transform:rotate(10deg)')}
-      ${url ? `<img class="photo" src="${esc(url)}" alt="" onerror="this.nextElementSibling.remove();this.remove()" /><div class="shade"></div>` : ''}
-      <div style="position:relative;display:flex;gap:6px;align-self:flex-start"><span class="badge">Rezept des Tages</span>${isNew(r) ? newBadge('big') : ''}</div>
-      <div class="ft">${esc(r.title)}</div>
-      <div class="fm">${esc(metaOf(r))}</div>
-    </button>`;
-  }
+  const shuffle = S.cat === 'Alle' && S.recipes.length > 1 ? shuffleCtaHTML() : '';
   const cells = list.map((r, idx) => `
     <button class="cell" data-act="open" data-id="${esc(r.id)}" style="--i:${Math.min(idx, 12)}">
       <div class="top"><span class="num">${numOf(r)}${SOURCE[r.source_type] ? ' · ' + SOURCE[r.source_type] : ''}</span>${isNew(r) ? newBadge() : S.favs.includes(r.id) ? shape('flower', C.pink, 'width:14px;height:14px') : ''}</div>
-      ${art(r, 'art')}
+      ${art(r)}
       <span class="t">${esc(r.title)}</span>
       <span class="m">${esc(metaOf(r))}</span>
     </button>`).join('');
   const empty = !S.recipes.length
     ? `<div class="empty">${shape('sparkle', C.yellow, 'width:90px;height:90px')}<div class="et">Noch keine Rezepte</div><div class="muted" style="font-size:14px;max-width:260px">Tippe auf + oder teile ein TikTok mit Claude: „leg das als Rezept an“.</div></div>`
     : `<div class="empty">${shape('spiky', C.blue, 'width:90px;height:90px')}<div class="et">Nichts gefunden</div></div>`;
-  return `${featured}
+  return `${shuffle}
     <div class="sec-head"><h2 class="serif">${S.cat === 'Alle' ? 'Alle Rezepte' : S.cat === 'Neu' ? 'Neu dazugekommen' : esc(S.cat)}</h2>
     <span class="kicker" style="font-size:14px">${list.length} ${list.length === 1 ? 'Rezept' : 'Rezepte'}</span></div>
     ${list.length ? `<div class="grid">${cells}</div>` : empty}`;
 }
+
+// ---------- Shuffle ----------
+function shuffleCtaHTML(){
+  const pics = S.recipes.filter(r => safeUrl(r.image_url)).slice(0, 3);
+  const fan = [0, 1, 2].map(i => {
+    const r = pics[i], [c, c2] = PAIRS[(i * 3) % PAIRS.length];
+    const inner = r ? `<img src="${esc(safeUrl(r.image_url))}" alt="" loading="lazy" onerror="this.remove()" />` : '';
+    return `<span style="--r:${[-14, 3, 16][i]}deg;--x:${[48, 24, 0][i]}px;background:${c}">${shape(SHAPES[i * 2], c2, 'width:60%;height:60%')}${inner}</span>`;
+  }).join('');
+  return `<button class="shuffle-cta" data-act="shuffle">
+    <div class="sh-text"><span class="badge">Shuffle</span><div class="ft">Lass dich inspirieren</div><div class="fm">Durch ${S.recipes.length} Rezepte wischen</div></div>
+    <div class="sh-stack" aria-hidden="true">${fan}</div>
+  </button>`;
+}
+function newDeck(){
+  const ids = S.recipes.map(r => r.id);
+  for(let i = ids.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+  S.deck = ids; S.di = 0;
+}
+const deckIds = () => (S.deck || []).filter(id => byId(id));
+function swipeCardHTML(r, pos){
+  const L = look(r), url = safeUrl(r.image_url), tags = tagsOf(r);
+  return `<div class="swipe-card ${pos}${pos === 'top' && S.pop === 'deck' ? ' in' : ''}" ${pos === 'top' ? `id="topCard" data-act="shOpen" data-id="${esc(r.id)}"` : 'aria-hidden="true"'}>
+    <div class="sc-media" style="background:${L.c}">
+      ${shape(L.s, L.c2)}
+      ${url ? `<img src="${esc(url)}" alt="" draggable="false" onerror="this.remove()" />` : ''}
+      ${isNew(r) ? `<div class="sc-badge">${newBadge('big')}</div>` : ''}
+    </div>
+    <div class="sc-body">
+      ${tags.length ? `<span class="kicker" style="font-size:13px">${esc(tags.slice(0, 3).join(' · '))}</span>` : ''}
+      <div class="sc-title">${esc(r.title)}</div>
+      ${r.description ? `<p class="sc-desc">${esc(r.description)}</p>` : ''}
+      <div class="sc-meta">${esc(metaOf(r))}</div>
+    </div>
+  </div>`;
+}
+function shuffleHTML(){
+  if(!S.deck) newDeck();
+  const ids = deckIds();
+  const cur = byId(ids[S.di]), next = byId(ids[S.di + 1]);
+  const head = `<div class="row-between pad">
+      <button class="circle-btn" data-act="go" data-v="home" aria-label="Zurück" style="font-size:20px">←</button>
+      <span class="kicker">${cur ? `${S.di + 1} / ${ids.length}` : 'Shuffle'}</span>
+      <button class="circle-btn" data-act="shMix" aria-label="Neu mischen">${shape('sparkle', C.yellow, 'width:22px;height:22px')}</button>
+    </div>`;
+  if(!cur){
+    return `<div class="shuffle top-pad">${head}
+      <div class="empty" style="flex:1;justify-content:center">
+        ${shape('burst', C.pink, 'width:120px;height:120px')}
+        <div class="et" style="font-size:28px">Alle durch!</div>
+        <div class="muted" style="font-size:15px">Du hast dir alle ${ids.length} Rezepte angesehen.</div>
+        <button class="cta" data-act="shMix" style="width:auto;height:52px;padding:0 26px;margin-top:10px">Nochmal mischen</button>
+      </div>
+    </div>`;
+  }
+  const fav = S.favs.includes(cur.id);
+  return `<div class="shuffle top-pad">${head}
+    <div class="deck">${next ? swipeCardHTML(next, 'under') : ''}${swipeCardHTML(cur, 'top')}</div>
+    <div class="deck-actions">
+      <button class="circle-btn" data-act="shPrev" aria-label="Vorheriges Rezept" ${S.di ? '' : 'disabled style="opacity:.35"'}>↶</button>
+      <button class="cta" data-act="shOpen" data-id="${esc(cur.id)}">Rezept öffnen</button>
+      <button class="circle-btn" data-act="fav" data-id="${esc(cur.id)}" aria-label="${fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten'}">${flower(fav)}</button>
+    </div>
+    <p class="deck-hint">Wischen für das nächste Rezept · Tippen zum Öffnen</p>
+  </div>`;
+}
+function shuffleNext(dir = 1){
+  const card = $('topCard');
+  if(!card){ S.di++; S.pop = 'deck'; return render(); }
+  haptic();
+  card.removeAttribute('data-act');
+  card.style.transition = 'transform .28s ease-in, opacity .28s ease-in';
+  card.style.transform = `translate(${dir * (window.innerWidth + 200)}px, 40px) rotate(${dir * 26}deg)`;
+  card.style.opacity = '0';
+  setTimeout(() => { S.di++; S.pop = 'deck'; render(); }, 230);
+}
+// Wischgeste auf der obersten Karte
+let drag = null;
+document.addEventListener('pointerdown', e => {
+  const card = e.target.closest('#topCard');
+  if(!card || e.button > 0) return;
+  drag = { card, pid: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, dy: 0, moved: false };
+  card.setPointerCapture(e.pointerId);
+  card.style.transition = 'none';
+});
+document.addEventListener('pointermove', e => {
+  if(!drag || e.pointerId !== drag.pid) return;
+  drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y;
+  if(Math.abs(drag.dx) + Math.abs(drag.dy) > 8) drag.moved = true;
+  if(drag.moved) drag.card.style.transform = `translate(${drag.dx}px, ${drag.dy * .2}px) rotate(${drag.dx / 16}deg)`;
+});
+function endDrag(e){
+  if(!drag || e.pointerId !== drag.pid) return;
+  const d = drag; drag = null;
+  if(!d.moved) return;
+  // Nach einer Wischbewegung soll der folgende Klick die Karte nicht öffnen.
+  d.card.removeAttribute('data-act');
+  if(e.type === 'pointerup' && Math.abs(d.dx) > 90) return shuffleNext(Math.sign(d.dx));
+  d.card.style.transition = 'transform .4s cubic-bezier(.34,1.56,.64,1)';
+  d.card.style.transform = '';
+  setTimeout(() => d.card.setAttribute('data-act', 'shOpen'), 0);
+}
+document.addEventListener('pointerup', endDrag);
+document.addEventListener('pointercancel', endDrag);
 
 function filterCount(){ const f = S.sf; return (f.time ? 1 : 0) + (f.kcal ? 1 : 0) + (f.fav ? 1 : 0) + (f.neu ? 1 : 0) + f.tags.length; }
 function allTags(){
@@ -1076,6 +1202,7 @@ function detailHTML(){
         <div class="hero-bar">
           <button class="float-btn" data-act="home" aria-label="Zurück">←</button>
           <div style="display:flex;gap:8px">
+            ${src ? `<a class="float-btn" href="${esc(src)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(SOURCE[r.source_type] || 'Quelle')} öffnen" style="text-decoration:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg></a>` : ''}
             <label class="float-btn" aria-label="Foto aufnehmen oder auswählen" style="cursor:pointer"><input type="file" accept="image/*" id="heroFile" class="vh" /><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></label>
             <button class="float-btn" data-act="edit" data-id="${esc(r.id)}" aria-label="Bearbeiten">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -1397,7 +1524,7 @@ function render(){
   const focused = document.activeElement && document.activeElement.id === 'sq' ? document.activeElement : null;
   const selPos = focused ? focused.selectionStart : 0;
   const entering = scr.dataset.key !== key || S.anim;
-  const html = { home: homeHTML, detail: detailHTML, cook: cookHTML, plan: planHTML, fav: favHTML, edit: editHTML, search: searchHTML, shop: shopHTML }[S.screen]();
+  const html = { home: homeHTML, detail: detailHTML, cook: cookHTML, plan: planHTML, fav: favHTML, edit: editHTML, search: searchHTML, shop: shopHTML, shuffle: shuffleHTML }[S.screen]();
   scr.innerHTML = html;
   scr.dataset.key = S.screen + ':' + (S.rid || '');
   if(entering && scr.firstElementChild) scr.firstElementChild.classList.add('enter');
@@ -1641,7 +1768,7 @@ async function deleteRecipe(){
 // ============================================================
 // Events
 // ============================================================
-const HAPTIC = new Set(['ingOrder','catEdit','fOpen','fTime','fKcal','fTagMode','fReset','fClear','shopCheck','sfTime','sfFav','sfNew','sfTag','sqSet','refresh','theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
+const HAPTIC = new Set(['shuffle','shMix','shPrev','ingOrder','catEdit','fOpen','fTime','fKcal','fTagMode','fReset','fClear','shopCheck','sfTime','sfFav','sfNew','sfTag','sqSet','refresh','theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
 document.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]');
   if(!el) return;
@@ -1654,7 +1781,11 @@ document.addEventListener('click', async e => {
     case 'closeEdit': S.rid ? openRecipe(S.rid) : go('home'); break;
     case 'cat': S.cat = v; render(); break;
     case 'open': S.back = null; openRecipe(id); break;
-    case 'home': stopTimer(); if(S.screen === 'detail' && S.back === 'search'){ S.back = null; go('search'); } else { S.back = null; go('home'); } break;
+    case 'home': stopTimer(); if(S.screen === 'detail' && S.back === 'search'){ S.back = null; go('search'); } else if(S.screen === 'detail' && S.back === 'shuffle'){ S.back = null; go('shuffle'); } else { S.back = null; go('home'); } break;
+    case 'shuffle': newDeck(); go('shuffle'); break;
+    case 'shMix': newDeck(); S.pop = 'deck'; render(); break;
+    case 'shPrev': if(S.di > 0){ S.di--; S.pop = 'deck'; render(); } break;
+    case 'shOpen': S.back = 'shuffle'; openRecipe(id); break;
     case 'go': go(v); break;
     case 'refresh': refresh(); break;
     case 'search': go('search'); setTimeout(() => $('sq')?.focus(), 60); break;
@@ -1736,6 +1867,10 @@ document.addEventListener('change', e => {
 document.addEventListener('keydown', e => {
   if(e.key === 'Enter' && e.target.id === 'sq'){ rememberSearch(); e.target.blur(); }
   if(e.key === 'Escape' && S.sheet){ S.sheet = null; renderSheet(); }
+  if(S.screen === 'shuffle' && !S.sheet && !e.target.closest('input,textarea')){
+    if(e.key === 'ArrowRight') shuffleNext(1);
+    if(e.key === 'ArrowLeft' && S.di > 0){ S.di--; S.pop = 'deck'; render(); }
+  }
 });
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && S.screen === 'cook') requestWake();
@@ -1744,7 +1879,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Update-Prüfung ----------
 // GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
 // Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
-const APP_VERSION = '2026-09-27.6';
+const APP_VERSION = '2026-09-28.1';
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{

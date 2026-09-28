@@ -41,8 +41,8 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 
 #app{min-height:100dvh;display:flex;justify-content:center;align-items:flex-start;font-family:'Instrument Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg)}
 @media (min-width:520px){html,body,#app{background:var(--outer)}}
-.phone{position:relative;width:100%;max-width:430px;height:100dvh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
-@media (min-width:520px){.phone{height:844px;margin:32px 0;border-radius:46px;box-shadow:0 40px 90px -40px rgba(18,40,74,.45),0 0 0 1px rgba(18,40,74,.14)}}
+.phone{position:relative;width:100%;height:100dvh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+@media (min-width:520px){.phone{max-width:430px;height:844px;margin:32px 0;border-radius:46px;box-shadow:0 40px 90px -40px rgba(18,40,74,.45),0 0 0 1px rgba(18,40,74,.14)}}
 #screen{flex:1;min-height:0;display:flex;flex-direction:column}
 .scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
@@ -1915,7 +1915,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Update-Prüfung ----------
 // GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
 // Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
-const APP_VERSION = '2026-09-28.2';
+const APP_VERSION = '2026-09-28.3';
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{

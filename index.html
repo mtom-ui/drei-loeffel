@@ -1506,15 +1506,51 @@ function sheetHTML(){
 // ============================================================
 // Rendern
 // ============================================================
-function render(){
-  clipId = 0;
-  document.documentElement.dataset.theme = S.dark ? 'dark' : 'light';
-  // Bereich unter der Statusleiste in der Farbe des obersten Elements einfärben.
+// Bereich unter der Statusleiste in der Farbe des obersten Elements einfärben –
+// bei Rezeptfotos in der Farbe des oberen Bildrands, damit es nahtlos übergeht.
+const edgeColors = new Map(), edgePending = new Set();
+function applyEdge(){
   const cur = byId(S.rid);
-  const edge = (S.screen === 'cook' || S.screen === 'detail') && cur ? look(cur).c : '';
+  const photo = S.screen === 'detail' && cur ? safeUrl(cur.image_url) : '';
+  let edge = (S.screen === 'cook' || S.screen === 'detail') && cur ? look(cur).c : '';
+  if(photo){
+    edge = edgeColors.get(photo) || (S.dark ? '#0E1729' : '#F5F2EB');
+    if(!edgeColors.has(photo)) sampleEdge(photo);
+  }
   document.documentElement.style.backgroundColor = edge;
   document.body.style.backgroundColor = edge;
   $('themeColor').content = edge || (S.dark ? '#0E1729' : '#F5F2EB');
+}
+function sampleEdge(url){
+  if(edgePending.has(url)) return;
+  edgePending.add(url);
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    try{
+      // Sichtbaren Ausschnitt wie bei object-fit:cover im 330 px hohen Kopfbild bestimmen.
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const boxW = $('screen').clientWidth || 390, boxH = 330;
+      const scale = Math.max(boxW / w, boxH / h);
+      const visW = boxW / scale, visH = boxH / scale;
+      const c = document.createElement('canvas'); c.width = 32; c.height = 2;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(img, (w - visW) / 2, (h - visH) / 2, visW, Math.max(2, visH * .03), 0, 0, 32, 2);
+      const d = ctx.getImageData(0, 0, 32, 2).data;
+      let r = 0, g = 0, b = 0;
+      for(let i = 0; i < d.length; i += 4){ r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+      const n = d.length / 4;
+      edgeColors.set(url, `rgb(${Math.round(r / n)},${Math.round(g / n)},${Math.round(b / n)})`);
+      applyEdge();
+    }catch{}
+  };
+  img.src = url;
+}
+
+function render(){
+  clipId = 0;
+  document.documentElement.dataset.theme = S.dark ? 'dark' : 'light';
+  applyEdge();
 
   const scr = $('screen');
   const key = S.screen + ':' + (S.rid || '');
@@ -1879,7 +1915,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Update-Prüfung ----------
 // GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
 // Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
-const APP_VERSION = '2026-09-28.1';
+const APP_VERSION = '2026-09-28.2';
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{

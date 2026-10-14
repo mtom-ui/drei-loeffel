@@ -87,7 +87,10 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .shuffle{flex:1;min-height:0;display:flex;flex-direction:column;padding-bottom:max(22px,calc(env(safe-area-inset-bottom) + 8px))}
 .deck{position:relative;flex:1;min-height:0;margin:16px 22px 0}
 .swipe-card{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--surface);border:1.5px solid var(--ink);border-radius:30px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;will-change:transform;cursor:grab}
-.swipe-card.under{transform:scale(.94) translateY(16px);opacity:.6;pointer-events:none}
+.swipe-card.under{transform:scale(.94) translateY(16px);opacity:.6;pointer-events:none;transition:opacity .15s}
+.swipe-card.under.prev{opacity:0}
+.deck.dir-prev .swipe-card.under.prev{opacity:.6}
+.deck.dir-prev .swipe-card.under.next{opacity:0}
 .sc-media{position:relative;flex:1;min-height:0;display:grid;place-items:center;overflow:hidden}
 .sc-media > svg{width:68%;height:68%}
 .sc-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
@@ -958,7 +961,7 @@ function swipeCardHTML(r, pos){
 function shuffleHTML(){
   if(!S.deck) newDeck();
   const ids = deckIds();
-  const cur = byId(ids[S.di]), next = byId(ids[S.di + 1]);
+  const cur = byId(ids[S.di]), next = byId(ids[S.di + 1]), prev = S.di > 0 ? byId(ids[S.di - 1]) : null;
   const head = `<div class="row-between pad">
       <button class="circle-btn" data-act="go" data-v="home" aria-label="Zurück" style="font-size:20px">←</button>
       <span class="kicker">${cur ? `${S.di + 1} / ${ids.length}` : 'Shuffle'}</span>
@@ -971,29 +974,39 @@ function shuffleHTML(){
         <div class="et" style="font-size:28px">Alle durch!</div>
         <div class="muted" style="font-size:15px">Du hast dir alle ${ids.length} Rezepte angesehen.</div>
         <button class="cta" data-act="shMix" style="width:auto;height:52px;padding:0 26px;margin-top:10px">Nochmal mischen</button>
+        <button class="today-link" data-act="shPrev" style="margin-top:6px">Zurück zum letzten Rezept</button>
       </div>
     </div>`;
   }
   const fav = S.favs.includes(cur.id);
   return `<div class="shuffle top-pad">${head}
-    <div class="deck">${next ? swipeCardHTML(next, 'under') : ''}${swipeCardHTML(cur, 'top')}</div>
+    <div class="deck" id="deck">${prev ? swipeCardHTML(prev, 'under prev') : ''}${next ? swipeCardHTML(next, 'under next') : ''}${swipeCardHTML(cur, 'top')}</div>
     <div class="deck-actions">
       <button class="circle-btn" data-act="shPrev" aria-label="Vorheriges Rezept" ${S.di ? '' : 'disabled style="opacity:.35"'}>↶</button>
       <button class="cta" data-act="shOpen" data-id="${esc(cur.id)}">Rezept öffnen</button>
       <button class="circle-btn" data-act="fav" data-id="${esc(cur.id)}" aria-label="${fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten'}">${flower(fav)}</button>
     </div>
-    <p class="deck-hint">Wischen für das nächste Rezept · Tippen zum Öffnen</p>
+    <p class="deck-hint">Nach links wischen: nächstes Rezept · nach rechts: vorheriges<br>Tippen zum Öffnen</p>
   </div>`;
 }
-function shuffleNext(dir = 1){
+// Nach links aus dem Bild wischen = nächstes Rezept, nach rechts = vorheriges.
+function shuffleStep(dir){
   const card = $('topCard');
-  if(!card){ S.di++; S.pop = 'deck'; return render(); }
+  const apply = () => { S.di += dir > 0 ? 1 : -1; S.pop = 'deck'; render(); };
+  if(!card) return apply();
   haptic();
+  $('deck')?.classList.toggle('dir-prev', dir < 0);
   card.removeAttribute('data-act');
+  const out = dir > 0 ? -1 : 1;
   card.style.transition = 'transform .28s ease-in, opacity .28s ease-in';
-  card.style.transform = `translate(${dir * (window.innerWidth + 200)}px, 40px) rotate(${dir * 26}deg)`;
+  card.style.transform = `translate(${out * (window.innerWidth + 200)}px, 40px) rotate(${out * 26}deg)`;
   card.style.opacity = '0';
-  setTimeout(() => { S.di++; S.pop = 'deck'; render(); }, 230);
+  setTimeout(apply, 230);
+}
+const shuffleNext = () => shuffleStep(1);
+function shufflePrev(){
+  if(S.di > 0) shuffleStep(-1);
+  else { haptic(); toast('Das ist das erste Rezept'); }
 }
 // Wischgeste auf der obersten Karte
 let drag = null;
@@ -1008,7 +1021,12 @@ document.addEventListener('pointermove', e => {
   if(!drag || e.pointerId !== drag.pid) return;
   drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y;
   if(Math.abs(drag.dx) + Math.abs(drag.dy) > 8) drag.moved = true;
-  if(drag.moved) drag.card.style.transform = `translate(${drag.dx}px, ${drag.dy * .2}px) rotate(${drag.dx / 16}deg)`;
+  if(drag.moved){
+    // Ganz am Anfang gibt es kein vorheriges Rezept: die Karte gibt nur leicht nach.
+    const dx = drag.dx > 0 && S.di === 0 ? drag.dx * .25 : drag.dx;
+    drag.card.style.transform = `translate(${dx}px, ${drag.dy * .2}px) rotate(${dx / 16}deg)`;
+    $('deck')?.classList.toggle('dir-prev', drag.dx > 12);
+  }
 });
 function endDrag(e){
   if(!drag || e.pointerId !== drag.pid) return;
@@ -1016,7 +1034,12 @@ function endDrag(e){
   if(!d.moved) return;
   // Nach einer Wischbewegung soll der folgende Klick die Karte nicht öffnen.
   d.card.removeAttribute('data-act');
-  if(e.type === 'pointerup' && Math.abs(d.dx) > 90) return shuffleNext(Math.sign(d.dx));
+  if(e.type === 'pointerup' && d.dx < -90) return shuffleNext();
+  if(e.type === 'pointerup' && d.dx > 90){
+    if(S.di > 0) return shuffleStep(-1);
+    haptic(); toast('Das ist das erste Rezept');
+  }
+  $('deck')?.classList.remove('dir-prev');
   d.card.style.transition = 'transform .4s cubic-bezier(.34,1.56,.64,1)';
   d.card.style.transform = '';
   setTimeout(() => d.card.setAttribute('data-act', 'shOpen'), 0);
@@ -1820,7 +1843,7 @@ document.addEventListener('click', async e => {
     case 'home': stopTimer(); if(S.screen === 'detail' && S.back === 'search'){ S.back = null; go('search'); } else if(S.screen === 'detail' && S.back === 'shuffle'){ S.back = null; go('shuffle'); } else { S.back = null; go('home'); } break;
     case 'shuffle': newDeck(); go('shuffle'); break;
     case 'shMix': newDeck(); S.pop = 'deck'; render(); break;
-    case 'shPrev': if(S.di > 0){ S.di--; S.pop = 'deck'; render(); } break;
+    case 'shPrev': if(S.di > 0 && !$('topCard')){ S.di--; S.pop = 'deck'; render(); } else shufflePrev(); break;
     case 'shOpen': S.back = 'shuffle'; openRecipe(id); break;
     case 'go': go(v); break;
     case 'refresh': refresh(); break;
@@ -1904,8 +1927,8 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Enter' && e.target.id === 'sq'){ rememberSearch(); e.target.blur(); }
   if(e.key === 'Escape' && S.sheet){ S.sheet = null; renderSheet(); }
   if(S.screen === 'shuffle' && !S.sheet && !e.target.closest('input,textarea')){
-    if(e.key === 'ArrowRight') shuffleNext(1);
-    if(e.key === 'ArrowLeft' && S.di > 0){ S.di--; S.pop = 'deck'; render(); }
+    if(e.key === 'ArrowRight') shuffleNext();
+    if(e.key === 'ArrowLeft') shufflePrev();
   }
 });
 document.addEventListener('visibilitychange', () => {
@@ -1915,7 +1938,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Update-Prüfung ----------
 // GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
 // Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
-const APP_VERSION = '2026-09-28.3';
+const APP_VERSION = '2026-10-14.1';
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{

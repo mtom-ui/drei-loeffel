@@ -140,7 +140,11 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .ing{display:flex;align-items:center;gap:14px;min-height:54px;padding:10px 0;border:none;border-bottom:1px solid var(--line);background:transparent;width:100%;text-align:left}
 .ing .n{flex:1;font-size:16px}
 .ing .a{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.ing.done .n,.ing.done .a{color:var(--faint);text-decoration:line-through}
+.ing.done .n,.ing.done .a{color:var(--faint)}
+.nm{position:relative;display:inline-block}
+.scribble{position:absolute;left:-5px;width:calc(100% + 10px);top:50%;height:24px;transform:translateY(-50%);overflow:visible;pointer-events:none}
+.scribble path{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:.8;stroke-dasharray:1;stroke-dashoffset:0}
+.scribble.erase path{stroke-dashoffset:1}
 .step{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}
 .step-num{position:relative;width:42px;height:42px;flex:none}
 .step-num svg{position:absolute;inset:0;width:42px;height:42px}
@@ -205,8 +209,16 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 
 /* Sheet */
 .sheet-wrap{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;justify-content:flex-end}
-.scrim{position:absolute;inset:0;background:var(--scrim);animation:fade .2s}
-.sheet{position:relative;background:var(--bg);border-radius:30px 30px 0 0;max-height:84%;display:flex;flex-direction:column;border-top:1px solid var(--ink);animation:up .28s cubic-bezier(.2,.8,.2,1)}
+.scrim{position:absolute;inset:0;background:var(--scrim);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:scrimIn .25s ease backwards}
+.sheet{position:relative;background:var(--bg);border-radius:30px 30px 0 0;max-height:84%;display:flex;flex-direction:column;border-top:1px solid var(--ink);animation:sheetIn .56s var(--spring-sheet) backwards}
+.sheet-wrap.no-anim .sheet,.sheet-wrap.no-anim .scrim{animation:none}
+.sheet-wrap.closing .sheet{animation:sheetOut .24s cubic-bezier(.4,0,1,1) both}
+.sheet-wrap.closing .scrim{animation:scrimOut .24s ease both}
+.grabber,.sheet-head{touch-action:none;cursor:grab}
+@keyframes sheetIn{from{transform:translateY(100%)}}
+@keyframes sheetOut{to{transform:translateY(100%)}}
+@keyframes scrimIn{from{opacity:0;backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}}
+@keyframes scrimOut{to{opacity:0;backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 @keyframes fade{from{opacity:0}}
 .grabber{padding:10px 0 0;display:flex;justify-content:center}
@@ -245,8 +257,8 @@ select.inp{appearance:none;-webkit-appearance:none}
 .danger{border:none;background:none;color:#C9423A;font-size:15px;font-weight:600;padding:0 6px;flex:none}
 
 /* Toast */
-.toast{position:absolute;left:50%;top:max(16px,calc(env(safe-area-inset-top) + 6px));z-index:50;transform:translate(-50%,-20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;transition:all .25s;max-width:calc(100% - 44px);text-align:center}
-.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast{position:absolute;left:50%;top:max(16px,calc(env(safe-area-inset-top) + 6px));z-index:50;transform:translate(-50%,-24px) scale(.92);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;transition:opacity .2s,transform .52s var(--spring-bouncy);max-width:calc(100% - 44px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
 .toast.err{background:#C9423A;color:#fff}
 /* Sync-Anzeige */
 .sync{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px 0 8px;border-radius:999px;border:1px solid var(--line);background:transparent;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;flex:none}
@@ -297,7 +309,7 @@ mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1
 
 /* Einkaufsliste */
 .progress{height:8px;border-radius:999px;background:var(--seg);overflow:hidden}
-.progress div{height:100%;background:#2FA56B;border-radius:999px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.progress div{height:100%;background:#2FA56B;border-radius:999px}
 .ing .from{font-size:12px;color:var(--muted);text-decoration:none}
 .tabs button{min-width:64px}
 
@@ -356,6 +368,32 @@ mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1
   .cook-timer.running b{animation:wiggle 1s ease-in-out infinite;display:inline-block}
   .ing.done .n{transition:color .25s}
 }
+
+/* ---------- Animate-UI-Effekte (nachgebaut) ---------- */
+:root{--spring:linear(0, 0.018, 0.061, 0.119, 0.186, 0.257, 0.329, 0.4, 0.467, 0.53, 0.588, 0.641, 0.697, 0.738, 0.775, 0.808, 0.837, 0.861, 0.883, 0.901, 0.917, 0.931, 0.942, 0.952, 0.961, 0.968, 0.973, 0.978, 0.982, 0.986, 0.988, 0.991, 0.993, 0.994, 0.996, 0.996, 0.997, 0.998, 0.998, 0.999, 0.999, 0.999, 1);--spring-bouncy:linear(0, 0.021, 0.072, 0.142, 0.225, 0.313, 0.402, 0.489, 0.582, 0.656, 0.723, 0.782, 0.833, 0.876, 0.913, 0.942, 0.966, 0.985, 0.999, 1.01, 1.017, 1.022, 1.025, 1.026, 1.025, 1.024, 1.023, 1.021, 1.018, 1.016, 1.014, 1.012, 1.01, 1.008, 1.006, 1.005, 1.004, 1.003, 1.002, 1.001, 1.001, 1);--spring-sheet:linear(0, 0.014, 0.042, 0.088, 0.143, 0.204, 0.26, 0.324, 0.388, 0.442, 0.501, 0.557, 0.602, 0.65, 0.693, 0.733, 0.765, 0.797, 0.826, 0.848, 0.871, 0.891, 0.906, 0.921, 0.934, 0.946, 0.954, 0.962, 0.97, 0.975, 0.98, 0.984, 0.988, 0.99, 0.993, 0.995, 0.996, 0.997, 0.998, 0.999, 1)}
+.seg,.chips,.days,.day-pick,.tabs{position:relative}
+.glide{position:absolute;z-index:0;border-radius:999px;background:var(--ink);pointer-events:none}
+.has-glide > button{position:relative;z-index:1;transition:color .25s}
+.has-glide > button.on{background:transparent}
+.days .glide{border-radius:0}
+.day-pick .glide{border-radius:14px}
+.tabs .glide{border-radius:0 0 3px 3px}
+.cta,.pill-btn,.add-dish,.circle-btn.solid{position:relative;overflow:hidden;isolation:isolate}
+.ripple{position:absolute;z-index:-1;border-radius:50%;background:currentColor;opacity:.22;transform:scale(0);pointer-events:none;animation:ripple .6s ease-out forwards}
+@keyframes ripple{to{transform:scale(1);opacity:0}}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+@media (prefers-reduced-motion:no-preference){
+  .scribble.draw path{animation:scribbleIn .7s ease-in-out both}
+  .scribble.erase path{animation:scribbleOut .4s ease-in both}
+  .roll{display:inline-block}
+  .roll.up{animation:rollUp .5s var(--spring-bouncy) both}
+  .roll.down{animation:rollDown .5s var(--spring-bouncy) both}
+}
+@keyframes scribbleIn{from{stroke-dashoffset:1}}
+@keyframes scribbleOut{from{stroke-dashoffset:0}to{stroke-dashoffset:1}}
+@keyframes rollUp{from{transform:translateY(75%);opacity:0}}
+@keyframes rollDown{from{transform:translateY(-75%);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sheet,.scrim,.sheet-wrap.closing .sheet,.sheet-wrap.closing .scrim{animation:none}}
 </style>
 </head>
 <body>
@@ -722,6 +760,117 @@ function highlight(text){
     out += esc(ch);
   });
   return out + (open ? '</mark>' : '');
+}
+// ============================================================
+// Bewegung – nachgebaut nach Animate UI (animate-ui.com)
+// ============================================================
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EASE = { spring: 'linear(0, 0.018, 0.061, 0.119, 0.186, 0.257, 0.329, 0.4, 0.467, 0.53, 0.588, 0.641, 0.697, 0.738, 0.775, 0.808, 0.837, 0.861, 0.883, 0.901, 0.917, 0.931, 0.942, 0.952, 0.961, 0.968, 0.973, 0.978, 0.982, 0.986, 0.988, 0.991, 0.993, 0.994, 0.996, 0.996, 0.997, 0.998, 0.998, 0.999, 0.999, 0.999, 1)', bouncy: 'linear(0, 0.021, 0.072, 0.142, 0.225, 0.313, 0.402, 0.489, 0.582, 0.656, 0.723, 0.782, 0.833, 0.876, 0.913, 0.942, 0.966, 0.985, 0.999, 1.01, 1.017, 1.022, 1.025, 1.026, 1.025, 1.024, 1.023, 1.021, 1.018, 1.016, 1.014, 1.012, 1.01, 1.008, 1.006, 1.005, 1.004, 1.003, 1.002, 1.001, 1.001, 1)' };
+// Ältere Browser ohne linear()-Easing: auf eine ähnliche Bézierkurve ausweichen.
+if(!(window.CSS && CSS.supports('animation-timing-function', 'linear(0, 1)'))){
+  EASE.spring = EASE.bouncy = 'cubic-bezier(.2,.8,.2,1)';
+  ['--spring', '--spring-bouncy', '--spring-sheet'].forEach(v => document.documentElement.style.setProperty(v, 'cubic-bezier(.2,.8,.2,1)'));
+}
+const GLIDE = new Map();
+// Gleitende Markierung (Animate UI "Highlight"): Gruppen, deren Buttons alle dieselbe
+// Aktion haben und genau einen aktiven Eintrag, bekommen eine federnde Markierung.
+function glideKey(box){
+  const acts = [...box.children].filter(c => c.tagName === 'BUTTON').map(b => b.dataset.act);
+  if(!acts.length || acts.some(a => a !== acts[0])) return null;
+  return (box.closest('#sheet') ? 'sheet:' : '') + acts[0];
+}
+function rememberChipScroll(){
+  document.querySelectorAll('.chips.has-glide').forEach(b => { const k = glideKey(b); if(k) GLIDE.set('scroll:' + k, b.scrollLeft); });
+}
+function afterPaint(root){
+  root.querySelectorAll('.seg, .chips, .days, .day-pick, .tabs').forEach(box => {
+    const key = glideKey(box);
+    const on = box.querySelectorAll(':scope > button.on, :scope > button[aria-current="page"]');
+    if(!key || on.length !== 1 || !on[0].offsetWidth) return;
+    if(GLIDE.has('scroll:' + key)) box.scrollLeft = GLIDE.get('scroll:' + key);
+    box.classList.add('has-glide');
+    let g = box.querySelector(':scope > .glide');
+    if(!g){ g = document.createElement('span'); g.className = 'glide'; g.setAttribute('aria-hidden', 'true'); box.prepend(g); }
+    const b = on[0];
+    const geo = box.classList.contains('tabs')
+      ? { l: b.offsetLeft + b.offsetWidth / 2 - 14, t: -1, w: 28, h: 3 }
+      : { l: b.offsetLeft, t: b.offsetTop, w: b.offsetWidth, h: b.offsetHeight };
+    const css = o => ({ left: o.l + 'px', top: o.t + 'px', width: o.w + 'px', height: o.h + 'px' });
+    Object.assign(g.style, css(geo));
+    const prev = GLIDE.get(key);
+    GLIDE.set(key, geo);
+    if(prev && (prev.l !== geo.l || prev.t !== geo.t || prev.w !== geo.w) && !reducedMotion()){
+      g.animate([css(prev), css(geo)], { duration: 450, easing: EASE.spring });
+    }
+  });
+  // Fortschrittsbalken federt vom alten zum neuen Stand (Animate UI "Progress").
+  root.querySelectorAll('[data-progress]').forEach(bar => {
+    const key = 'progress:' + bar.dataset.progress, w = bar.style.width, prev = GLIDE.get(key);
+    GLIDE.set(key, w);
+    if(prev != null && prev !== w && !reducedMotion()) bar.animate([{ width: prev }, { width: w }], { duration: 520, easing: EASE.bouncy });
+  });
+}
+// Ripple beim Antippen (Animate UI "Ripple Button").
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('.cta, .pill-btn, .add-dish, .circle-btn.solid');
+  if(!b || b.disabled || reducedMotion()) return;
+  const r = b.getBoundingClientRect(), size = Math.max(r.width, r.height) * 2.2;
+  const s = document.createElement('span');
+  s.className = 'ripple';
+  Object.assign(s.style, { width: size + 'px', height: size + 'px', left: (e.clientX - r.left - size / 2) + 'px', top: (e.clientY - r.top - size / 2) + 'px' });
+  b.appendChild(s);
+  s.addEventListener('animationend', () => s.remove());
+}, { passive: true });
+// Hell/Dunkel mit Kreis-Übergang ab dem Button (Animate UI "Theme Toggler").
+function toggleTheme(btn){
+  const flip = () => { S.dark = !S.dark; store('theme', S.dark ? 'dark' : 'light'); S.pop = 'theme'; render(); };
+  if(!document.startViewTransition || reducedMotion()) return flip();
+  const r = btn.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+  const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  document.startViewTransition(flip).ready.then(() => {
+    document.documentElement.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+      { duration: 650, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' });
+  }).catch(() => {});
+}
+// Sheets: mit Animation schließen und nach unten wegwischbar (Animate UI "Sheet").
+function closeSheet(after){
+  const wrap = $('sheet').querySelector('.sheet-wrap');
+  const done = () => { S.sheet = null; renderSheet(); if(after) after(); };
+  if(!wrap || reducedMotion()) return done();
+  wrap.classList.remove('no-anim');
+  wrap.classList.add('closing');
+  setTimeout(done, 230);
+}
+let sheetDrag = null;
+document.addEventListener('pointerdown', e => {
+  const handle = e.target.closest('#sheet .grabber, #sheet .sheet-head');
+  if(!handle || e.target.closest('input, button')) return;
+  const sheet = handle.closest('.sheet');
+  sheetDrag = { sheet, pid: e.pointerId, y: e.clientY, dy: 0 };
+  sheet.style.transition = 'none';
+  try{ handle.setPointerCapture(e.pointerId); }catch{}
+});
+document.addEventListener('pointermove', e => {
+  if(!sheetDrag || e.pointerId !== sheetDrag.pid) return;
+  sheetDrag.dy = Math.max(0, e.clientY - sheetDrag.y);
+  sheetDrag.sheet.style.transform = `translateY(${sheetDrag.dy}px)`;
+});
+function endSheetDrag(e){
+  if(!sheetDrag || e.pointerId !== sheetDrag.pid) return;
+  const d = sheetDrag; sheetDrag = null;
+  if(d.dy > 90){ haptic(); return closeSheet(() => { if(S.screen === 'plan') render(); }); }
+  d.sheet.style.transition = `transform .45s ${EASE.bouncy}`;
+  d.sheet.style.transform = '';
+}
+document.addEventListener('pointerup', endSheetDrag);
+document.addEventListener('pointercancel', endSheetDrag);
+
+// Handgezeichnete Wellenlinie zum Durchstreichen (nach Animate UI "Playful Todolist").
+const SCRIBBLE = 'M 10 16.91 s 79.8 -11.36 98.1 -11.34 c 22.2 0.02 -47.82 14.25 -33.39 22.02 c 12.61 6.77 124.18 -27.98 133.31 -17.28 c 7.52 8.38 -26.8 20.02 4.61 22.05 c 24.55 1.93 113.37 -20.36 113.37 -20.36';
+function scribble(on, animate){
+  if(!on && !animate) return '';
+  return `<svg class="scribble${animate ? (on ? ' draw' : ' erase') : ''}" viewBox="0 0 340 32" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="${SCRIBBLE}"></path></svg>`;
 }
 const recent = () => { try{ return JSON.parse(stored('recent')) || []; }catch{ return []; } };
 function rememberSearch(){
@@ -1137,7 +1286,7 @@ function shopHTML(){
         <button class="cta" data-act="go" data-v="plan" style="width:auto;height:50px;padding:0 24px;font-size:15px;margin-top:8px">Zum Wochenplan</button>
       </div>`
     : `
-      <div class="progress"><div style="width:${all ? Math.round(done / all * 100) : 0}%"></div></div>
+      <div class="progress"><div data-progress="shop" style="width:${all ? Math.round(done / all * 100) : 0}%"></div></div>
       <div class="row-between" style="margin:10px 0 4px"><span class="muted" style="font-size:14px">${done} von ${all} erledigt${done === all && all ? ' 🎉' : ''}</span>
         <div style="display:flex;gap:14px">${done ? '<button class="today-link" data-act="shopReset">Zurücksetzen</button>' : ''}<button class="today-link" data-act="shopShare">Teilen</button></div></div>
       ${groups.map((g, gi) => `<div class="slot-block" style="margin-top:22px;--i:${gi}">
@@ -1148,7 +1297,7 @@ function shopHTML(){
           const amt = (it.amount != null ? unitPretty(it.amount, it.unit) : '') + (it.loose && it.amount != null ? ' +' : '');
           return `<button class="ing${on ? ' done' : ''}" data-act="shopCheck" data-k="${esc(it.key)}">
             ${S.pop === 'shop:' + it.key ? `<span class="pop" style="display:grid">${mark(on)}</span>` : mark(on)}
-            <span class="n" style="display:flex;flex-direction:column;gap:2px">${esc(it.name)}<span class="from">${esc([...it.from].join(', '))}</span></span>
+            <span class="n" style="display:flex;flex-direction:column;gap:2px;align-items:flex-start"><span class="nm">${esc(it.name)}${scribble(on, S.pop === 'shop:' + it.key)}</span><span class="from">${esc([...it.from].join(', '))}</span></span>
             <span class="a">${esc(amt)}</span>
           </button>`;
         }).join('')}
@@ -1190,8 +1339,9 @@ function detailHTML(){
         </select></label>
       </div>`;
     }
+    const rolled = S.pop === 'serv' ? ` roll ${S.servDir > 0 ? 'up' : 'down'}` : '';
     return `<button class="ing${on ? ' done' : ''}" data-act="check" data-k="${esc(k)}">
-      ${S.pop === 'ing:' + k ? `<span class="pop" style="display:grid">${mark(on)}</span>` : mark(on)}${label}<span class="a">${esc(amountOf(i, serv, r.servings))}</span>
+      ${S.pop === 'ing:' + k ? `<span class="pop" style="display:grid">${mark(on)}</span>` : mark(on)}<span class="n"><span class="nm">${esc(i.name)}${scribble(on, S.pop === 'ing:' + k)}</span>${i.note ? ` <span class="muted">(${esc(i.note)})</span>` : ''}</span><span class="a${rolled}">${esc(amountOf(i, serv, r.servings))}</span>
     </button>`;
   };
   const ings = r.ingredients || [];
@@ -1250,13 +1400,13 @@ function detailHTML(){
             <span class="lbl">Portionen</span>
             <div class="stepper">
               <button class="circle-btn" data-act="serv" data-v="-1" style="font-size:22px" aria-label="Weniger">−</button>
-              <span class="${S.pop === 'serv' ? 'pop' : ''}">${serv}</span>
+              <span class="${S.pop === 'serv' ? `roll ${S.servDir > 0 ? 'up' : 'down'}` : ''}">${serv}</span>
               <button class="circle-btn solid" data-act="serv" data-v="1" style="font-size:22px" aria-label="Mehr">+</button>
             </div>
           </div>
           ${ingTools}
           ${ingr || '<p class="muted">Keine Zutaten hinterlegt.</p>'}
-          ${r.calories_per_serving ? `<p class="note">≈ ${Math.round(r.calories_per_serving * serv)} kcal für ${serv} ${serv === 1 ? 'Portion' : 'Portionen'}</p>` : ''}
+          ${r.calories_per_serving ? `<p class="note">≈ <span class="${S.pop === 'serv' ? `roll ${S.servDir > 0 ? 'up' : 'down'}` : ''}">${Math.round(r.calories_per_serving * serv)}</span> kcal für ${serv} ${serv === 1 ? 'Portion' : 'Portionen'}</p>` : ''}
         ` : `
           <div style="padding-top:10px">${stepsHTML || '<p class="muted">Keine Anleitung hinterlegt.</p>'}</div>
           ${notes.map(n => `<p class="note">${esc(n)}</p>`).join('')}
@@ -1583,6 +1733,7 @@ function render(){
   const focused = document.activeElement && document.activeElement.id === 'sq' ? document.activeElement : null;
   const selPos = focused ? focused.selectionStart : 0;
   const entering = scr.dataset.key !== key || S.anim;
+  rememberChipScroll();
   const html = { home: homeHTML, detail: detailHTML, cook: cookHTML, plan: planHTML, fav: favHTML, edit: editHTML, search: searchHTML, shop: shopHTML, shuffle: shuffleHTML }[S.screen]();
   scr.innerHTML = html;
   scr.dataset.key = S.screen + ':' + (S.rid || '');
@@ -1593,16 +1744,21 @@ function render(){
 
   $('tabs').innerHTML = ['home', 'plan', 'shop', 'fav'].includes(S.screen) ? tabsHTML() : '';
   renderSheet();
+  afterPaint(document);
   S.pop = null; S.anim = false; S.tabPop = false;
 }
 function renderSheet(){
   const el = $('sheet');
   const list = el.querySelector('[data-sheet-scroll]');
   const keep = list ? list.scrollTop : 0;
+  const wasOpen = !!el.querySelector('.sheet-wrap:not(.closing)');
   const act = document.activeElement;
   const focusId = act && act.id && el.contains(act) ? act.id : null;
   const pos = focusId ? act.selectionStart : 0;
   el.innerHTML = sheetHTML();
+  // Nur beim ersten Öffnen hereinfedern, nicht bei jedem Neuzeichnen.
+  if(wasOpen) el.querySelector('.sheet-wrap')?.classList.add('no-anim');
+  afterPaint(el);
   const list2 = el.querySelector('[data-sheet-scroll]');
   if(list2) list2.scrollTop = keep;
   if(focusId && $(focusId)){ const q = $(focusId); q.focus({ preventScroll: true }); q.setSelectionRange(pos, pos); }
@@ -1834,7 +1990,7 @@ document.addEventListener('click', async e => {
   const act = el.dataset.act, v = el.dataset.v, id = el.dataset.id;
   if(HAPTIC.has(act)) haptic();
   switch(act){
-    case 'theme': S.dark = !S.dark; store('theme', S.dark ? 'dark' : 'light'); S.pop = 'theme'; render(); break;
+    case 'theme': toggleTheme(el); break;
     case 'new': openEditor(); break;
     case 'edit': openEditor(id); break;
     case 'closeEdit': S.rid ? openRecipe(S.rid) : go('home'); break;
@@ -1873,7 +2029,7 @@ document.addEventListener('click', async e => {
     case 'shopShare': shareShop(); break;
     case 'fav': toggleFav(id); break;
     case 'tab': S.tab = v; render(); break;
-    case 'serv': { const r = byId(S.rid); const cur = S.serv[r.id] ?? r.servings; S.serv[r.id] = Math.min(24, Math.max(1, cur + Number(v))); S.pop = 'serv'; render(); break; }
+    case 'serv': { const r = byId(S.rid); const cur = S.serv[r.id] ?? r.servings; const next = Math.min(24, Math.max(1, cur + Number(v))); if(next === cur) break; S.serv[r.id] = next; S.servDir = Math.sign(Number(v)); S.pop = 'serv'; render(); break; }
     case 'check': S.checked[el.dataset.k] = !S.checked[el.dataset.k]; S.pop = 'ing:' + el.dataset.k; render(); break;
     case 'cook': stopTimer(); go('cook', { step: 0 }); requestWake(); break;
     case 'closeCook': stopTimer(); go('detail'); break;
@@ -1902,7 +2058,7 @@ document.addEventListener('click', async e => {
       clearTimeout(flashT); flashT = setTimeout(() => { S.flash = null; if(S.screen === 'detail') render(); }, 2000);
       break;
     }
-    case 'sheetClose': S.sheet = null; renderSheet(); if(S.screen === 'plan') render(); break;
+    case 'sheetClose': closeSheet(() => { if(S.screen === 'plan') render(); }); break;
     case 'addIng': { $('ingRows').insertAdjacentHTML('beforeend', ingRowHTML()); $('ingRows').lastElementChild.querySelector('.amount').focus(); break; }
     case 'delIng': el.closest('.ing-row').remove(); break;
     case 'save': track(saveRecipe); break;
@@ -1925,7 +2081,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('keydown', e => {
   if(e.key === 'Enter' && e.target.id === 'sq'){ rememberSearch(); e.target.blur(); }
-  if(e.key === 'Escape' && S.sheet){ S.sheet = null; renderSheet(); }
+  if(e.key === 'Escape' && S.sheet) closeSheet();
   if(S.screen === 'shuffle' && !S.sheet && !e.target.closest('input,textarea')){
     if(e.key === 'ArrowRight') shuffleNext();
     if(e.key === 'ArrowLeft') shufflePrev();
@@ -1938,7 +2094,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Update-Prüfung ----------
 // GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
 // Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
-const APP_VERSION = '2026-10-14.1';
+const APP_VERSION = '2026-10-14.2';
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{

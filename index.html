@@ -74,35 +74,26 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .chip{flex:none;display:flex;align-items:center;gap:7px;height:42px;padding:0 16px;border-radius:999px;border:1.5px solid var(--ink);background:transparent;font-size:14px;font-weight:500}
 .chip.on{background:var(--ink);color:var(--bg)}
 .badge{position:relative;align-self:flex-start;background:#F5F2EB;color:#12284A;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
-.shuffle-cta{margin:22px 22px 30px;width:calc(100% - 44px);height:156px;border:none;border-radius:30px;background:var(--ink);color:var(--bg);position:relative;overflow:hidden;display:flex;align-items:center;padding:22px;text-align:left}
-.sh-text{position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;max-width:56%}
-.sh-text .badge{background:#FCCA59}
-.sh-text .ft{font-family:Gloock,serif;font-size:28px;line-height:1.05}
-.sh-text .fm{font-size:13px;opacity:.75}
-.sh-stack{position:absolute;right:26px;top:50%;width:132px;height:112px;transform:translateY(-50%)}
-.sh-stack span{position:absolute;top:4px;right:var(--x);width:78px;height:104px;border-radius:14px;overflow:hidden;border:2px solid var(--bg);transform:rotate(var(--r));box-shadow:0 8px 20px -8px rgba(0,0,0,.5);display:grid;place-items:center}
-.sh-stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-
-/* Shuffle */
-.shuffle{flex:1;min-height:0;display:flex;flex-direction:column;padding-bottom:max(22px,calc(env(safe-area-inset-bottom) + 8px))}
-.deck{position:relative;flex:1;min-height:0;margin:16px 22px 0}
-.swipe-card{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--surface);border:1.5px solid var(--ink);border-radius:30px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;will-change:transform;cursor:grab}
-.swipe-card.under{transform:scale(.94) translateY(16px);opacity:.6;pointer-events:none;transition:opacity .15s}
-.swipe-card.under.prev{opacity:0}
-.deck.dir-prev .swipe-card.under.prev{opacity:.6}
-.deck.dir-prev .swipe-card.under.next{opacity:0}
-.sc-media{position:relative;flex:1;min-height:0;display:grid;place-items:center;overflow:hidden}
-.sc-media > svg{width:68%;height:68%}
-.sc-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
-.sc-badge{position:absolute;top:16px;left:16px;z-index:1}
-.sc-body{flex:none;padding:16px 20px 20px;display:flex;flex-direction:column;gap:6px;border-top:1.5px solid var(--ink)}
-.sc-title{font-family:Gloock,serif;font-size:30px;line-height:1.05;text-wrap:balance;overflow-wrap:anywhere}
-.sc-desc{margin:0;font-size:15px;line-height:1.45;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.sc-meta{font-size:13px;color:var(--muted)}
-.deck-actions{display:flex;gap:10px;align-items:center;padding:16px 22px 0}
-.deck-actions .cta{flex:1;height:56px;font-size:16px}
-.deck-actions .circle-btn{width:56px;height:56px;font-size:20px}
-.deck-hint{text-align:center;font-size:12px;font-style:italic;color:var(--faint);margin:10px 0 0}
+/* Karussell "Heute für dich" (nach Animate UI "Motion Carousel") */
+.car-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:26px 22px 4px}
+.car-head h2{font-size:26px;margin:2px 0 0}
+.carousel{position:relative;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 13% 14px;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.carousel::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;height:360px;padding:0;border:1.5px solid var(--ink);border-radius:28px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;text-align:left;transform:scale(var(--s,1));opacity:var(--o,1);will-change:transform}
+.carousel .slide{transition:none}
+.carousel .slide:active{transform:scale(calc(var(--s,1) * .97))}
+.sl-media{position:relative;flex:1;min-height:0;display:grid;place-items:center;overflow:hidden}
+.sl-media > svg{width:62%;height:62%}
+.sl-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.sl-badge{position:absolute;top:14px;left:14px;z-index:1}
+.sl-body{flex:none;padding:14px 18px 18px;display:flex;flex-direction:column;gap:5px;border-top:1.5px solid var(--ink)}
+.sl-title{font-family:Gloock,serif;font-size:24px;line-height:1.08;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sl-meta{font-size:13px;color:var(--muted)}
+.dots{display:flex;justify-content:center;align-items:center;gap:6px;padding:2px 22px 8px}
+.dot{width:8px;height:8px;flex:none;border:none;border-radius:999px;padding:0;background:var(--faint);display:grid;place-items:center;overflow:hidden;transition:width .45s var(--spring-bouncy),height .45s var(--spring-bouncy),background .25s}
+.dot span{font-size:11px;font-weight:700;color:var(--bg);opacity:0;white-space:nowrap;transition:opacity .15s}
+.dot.on{width:46px;height:22px;background:var(--ink)}
+.dot.on span{opacity:1;transition-delay:.12s}
 .sec-head{display:flex;align-items:baseline;justify-content:space-between;padding:22px 22px 12px}
 .sec-head h2{font-size:26px;margin:0}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--ink);border-left:1px solid var(--ink);margin:0 22px}
@@ -327,7 +318,7 @@ mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 @keyframes slideIn{from{opacity:0;transform:translateX(28px)}}
 @keyframes slideBack{from{opacity:0;transform:translateX(-28px)}}
-@keyframes cardIn{from{transform:scale(.94) translateY(16px);opacity:.6}}
+@keyframes slideIn{from{opacity:0;translate:48px 0}}
 @keyframes party{0%{transform:scale(0) rotate(-90deg)}60%{transform:scale(1.15) rotate(20deg)}100%{transform:scale(1) rotate(0)}}
 
 @media (prefers-reduced-motion:no-preference){
@@ -339,18 +330,15 @@ mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1
   .cell:active .art{transform:rotate(14deg) scale(.9)}
   .cell:hover .photo-art{transform:scale(1.02)}
   .cell:active .photo-art{transform:scale(.97)}
-  .sh-stack span{transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
-  .shuffle-cta:hover .sh-stack span{transform:rotate(calc(var(--r) * 1.6)) translateY(-4px)}
-  .swipe-card.in{animation:cardIn .32s cubic-bezier(.2,.8,.2,1)}
   .hero > svg{animation:drift 12s ease-in-out infinite}
   .empty > svg{animation:wiggle 2.4s ease-in-out infinite}
 
   .enter .home-head,.enter .search,.enter .chips,.enter .sec-head,.enter .sheet-body,.enter .form,.enter .week-row,.enter h1,.enter .days{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
   .enter .search{animation-delay:.05s}
   .enter .chips{animation-delay:.1s}
-  .enter .shuffle-cta{animation:pop .6s cubic-bezier(.2,.8,.2,1) .12s both}
+  .enter .carousel,.carousel.mix{animation:slideIn .6s var(--spring-bouncy) .1s both}
+  .enter .cell:nth-child(n+13),.enter .cell:nth-child(n+13) .photo-art,.enter .cell:nth-child(n+13) .art{animation:none}
   .enter .cell .photo-art{animation:rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.2s + var(--i,0) * 55ms)}
-  .enter .swipe-card.top{animation:pop .55s cubic-bezier(.34,1.56,.64,1) both}
   .enter .cell,.enter .fav-row,.enter .slot-block{animation:rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.15s + var(--i,0) * 55ms)}
   .enter .cell .art{animation:pop .6s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(.2s + var(--i,0) * 55ms)}
   .enter .hero > svg{animation:pop .7s cubic-bezier(.34,1.56,.64,1) both,drift 12s ease-in-out .7s infinite}
@@ -368,6 +356,11 @@ mark{background:rgba(252,202,89,.55);color:inherit;border-radius:3px;padding:0 1
   .cook-timer.running b{animation:wiggle 1s ease-in-out infinite;display:inline-block}
   .ing.done .n{transition:color .25s}
 }
+
+/* ---------- Scrollen ---------- */
+@media (max-width:519px){html,body{overflow:hidden;overscroll-behavior:none}}
+.scroll{overscroll-behavior-y:contain}
+.cell{content-visibility:auto;contain-intrinsic-size:auto 270px}
 
 /* ---------- Animate-UI-Effekte (nachgebaut) ---------- */
 :root{--spring:linear(0, 0.018, 0.061, 0.119, 0.186, 0.257, 0.329, 0.4, 0.467, 0.53, 0.588, 0.641, 0.697, 0.738, 0.775, 0.808, 0.837, 0.861, 0.883, 0.901, 0.917, 0.931, 0.942, 0.952, 0.961, 0.968, 0.973, 0.978, 0.982, 0.986, 0.988, 0.991, 0.993, 0.994, 0.996, 0.996, 0.997, 0.998, 0.998, 0.999, 0.999, 0.999, 1);--spring-bouncy:linear(0, 0.021, 0.072, 0.142, 0.225, 0.313, 0.402, 0.489, 0.582, 0.656, 0.723, 0.782, 0.833, 0.876, 0.913, 0.942, 0.966, 0.985, 0.999, 1.01, 1.017, 1.022, 1.025, 1.026, 1.025, 1.024, 1.023, 1.021, 1.018, 1.016, 1.014, 1.012, 1.01, 1.008, 1.006, 1.005, 1.004, 1.003, 1.002, 1.001, 1.001, 1);--spring-sheet:linear(0, 0.014, 0.042, 0.088, 0.143, 0.204, 0.26, 0.324, 0.388, 0.442, 0.501, 0.557, 0.602, 0.65, 0.693, 0.733, 0.765, 0.797, 0.826, 0.848, 0.871, 0.891, 0.906, 0.921, 0.934, 0.946, 0.954, 0.962, 0.97, 0.975, 0.98, 0.984, 0.988, 0.99, 0.993, 0.995, 0.996, 0.997, 0.998, 0.999, 1)}
@@ -464,7 +457,7 @@ const S = {
   favs: (() => { try{ return JSON.parse(stored('favs')) || []; }catch{ return []; } })(),
   weekOffset: 0, pday: (new Date().getDay() + 6) % 7,
   sheet: null, step: 0, left: null, running: false, flash: null,
-  recipes: [], loading: true, plan: [], deck: null, di: 0,
+  recipes: [], loading: true, plan: [], pickSeed: null, pickIndex: 0, carScroll: 0,
 };
 let timerIv = null, flashT = null, toastT = null, wakeLock = null, clipId = 0;
 
@@ -552,7 +545,7 @@ function art(r){
   if(url){
     return `<div class="photo-art" style="background:${L.c}" aria-hidden="true">
       ${shape(L.s, L.c2)}
-      <img src="${esc(url)}" alt="" loading="lazy" onerror="this.remove()" />
+      <img src="${esc(url)}" alt="" loading="lazy" decoding="async" onerror="this.remove()" />
     </div>`;
   }
   return `<svg class="art" viewBox="0 0 100 100" aria-hidden="true"><path d="${SH[L.s]}" fill-rule="evenodd" style="fill:${L.c}"></path></svg>`;
@@ -637,6 +630,23 @@ async function loadCatalog(){
   S.catalog = Object.fromEntries(data.map(x => [x.name_key, x.category]));
   return JSON.stringify(data);
 }
+// Live-Updates nicht mitten ins Scrollen oder Wischen rendern – das ruckelt und springt.
+const INTERACT = { last: 0, touching: false };
+const markInteract = () => { INTERACT.last = performance.now(); };
+document.addEventListener('touchstart', () => { INTERACT.touching = true; markInteract(); }, { passive: true });
+document.addEventListener('touchend', () => { INTERACT.touching = false; markInteract(); }, { passive: true });
+document.addEventListener('touchcancel', () => { INTERACT.touching = false; markInteract(); }, { passive: true });
+document.addEventListener('scroll', e => {
+  markInteract();
+  if(e.target.id === 'carousel' && !carRaf) carRaf = requestAnimationFrame(updateCarousel);
+}, { passive: true, capture: true });
+const userBusy = () => INTERACT.touching || performance.now() - INTERACT.last < 900;
+let idleRenderT = null;
+function renderWhenIdle(){
+  clearTimeout(idleRenderT);
+  if(userBusy()) idleRenderT = setTimeout(renderWhenIdle, 400);
+  else render();
+}
 async function loadRecipes(quiet){
   const catSig = await loadCatalog();
   const { data, error } = await sb.from('recipes').select(`
@@ -659,7 +669,7 @@ async function loadRecipes(quiet){
   S.recipes.forEach(r => (r.ingredients || []).sort((a, b) => a.position - b.position));
   S.favs = S.favs.filter(id => byId(id));
   if(!quiet && S.screen !== 'edit') S.anim = true;
-  render();
+  quiet ? renderWhenIdle() : render();
 }
 
 async function loadPlan(anim, quiet){
@@ -684,7 +694,7 @@ async function loadPlan(anim, quiet){
   S.plan = (plan.data || []).filter(e => e.recipe_id && byId(e.recipe_id));
   S.shopChecks = new Set(shopKeys);
   if(anim) S.anim = true;
-  render();
+  quiet ? renderWhenIdle() : render();
 }
 const planFor = (dateStr, meal) => S.plan.filter(e => e.plan_date === dateStr && e.meal_time === meal);
 
@@ -781,8 +791,11 @@ function glideKey(box){
 }
 function rememberChipScroll(){
   document.querySelectorAll('.chips.has-glide').forEach(b => { const k = glideKey(b); if(k) GLIDE.set('scroll:' + k, b.scrollLeft); });
+  if($('carousel')) S.carScroll = $('carousel').scrollLeft;
 }
 function afterPaint(root){
+  const car = root.querySelector && root.querySelector('#carousel');
+  if(car){ car.scrollLeft = S.carScroll || 0; updateCarousel(); }
   root.querySelectorAll('.seg, .chips, .days, .day-pick, .tabs').forEach(box => {
     const key = glideKey(box);
     const on = box.querySelectorAll(':scope > button.on, :scope > button[aria-current="page"]');
@@ -1055,7 +1068,7 @@ function homeListHTML(){
     return `<div class="sec-head"><h2 class="serif">Alle Rezepte</h2></div><div class="grid">${'<div class="skel"></div>'.repeat(4)}</div>`;
   }
   const list = homeFiltered();
-  const shuffle = S.cat === 'Alle' && S.recipes.length > 1 ? shuffleCtaHTML() : '';
+  const carousel = S.cat === 'Alle' && S.recipes.length > 2 ? carouselHTML() : '';
   const cells = list.map((r, idx) => `
     <button class="cell" data-act="open" data-id="${esc(r.id)}" style="--i:${Math.min(idx, 12)}">
       <div class="top"><span class="num">${numOf(r)}${SOURCE[r.source_type] ? ' · ' + SOURCE[r.source_type] : ''}</span>${isNew(r) ? newBadge() : S.favs.includes(r.id) ? shape('flower', C.pink, 'width:14px;height:14px') : ''}</div>
@@ -1066,135 +1079,75 @@ function homeListHTML(){
   const empty = !S.recipes.length
     ? `<div class="empty">${shape('sparkle', C.yellow, 'width:90px;height:90px')}<div class="et">Noch keine Rezepte</div><div class="muted" style="font-size:14px;max-width:260px">Tippe auf + oder teile ein TikTok mit Claude: „leg das als Rezept an“.</div></div>`
     : `<div class="empty">${shape('spiky', C.blue, 'width:90px;height:90px')}<div class="et">Nichts gefunden</div></div>`;
-  return `${shuffle}
+  return `${carousel}
     <div class="sec-head"><h2 class="serif">${S.cat === 'Alle' ? 'Alle Rezepte' : S.cat === 'Neu' ? 'Neu dazugekommen' : esc(S.cat)}</h2>
     <span class="kicker" style="font-size:14px">${list.length} ${list.length === 1 ? 'Rezept' : 'Rezepte'}</span></div>
     ${list.length ? `<div class="grid">${cells}</div>` : empty}`;
 }
 
-// ---------- Shuffle ----------
-function shuffleCtaHTML(){
-  const pics = S.recipes.filter(r => safeUrl(r.image_url)).slice(0, 3);
-  const fan = [0, 1, 2].map(i => {
-    const r = pics[i], [c, c2] = PAIRS[(i * 3) % PAIRS.length];
-    const inner = r ? `<img src="${esc(safeUrl(r.image_url))}" alt="" loading="lazy" onerror="this.remove()" />` : '';
-    return `<span style="--r:${[-14, 3, 16][i]}deg;--x:${[48, 24, 0][i]}px;background:${c}">${shape(SHAPES[i * 2], c2, 'width:60%;height:60%')}${inner}</span>`;
-  }).join('');
-  return `<button class="shuffle-cta" data-act="shuffle">
-    <div class="sh-text"><span class="badge">Shuffle</span><div class="ft">Lass dich inspirieren</div><div class="fm">Durch ${S.recipes.length} Rezepte wischen</div></div>
-    <div class="sh-stack" aria-hidden="true">${fan}</div>
-  </button>`;
+// ---------- Karussell "Heute für dich" ----------
+// Tagesauswahl per Seed: beide Handys zeigen am selben Tag dieselben Rezepte.
+function seeded(seed){
+  return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 }
-function newDeck(){
-  const ids = S.recipes.map(r => r.id);
-  for(let i = ids.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
-  S.deck = ids; S.di = 0;
+function pickIds(){
+  if(S.pickSeed == null) S.pickSeed = hash(toDateStr(new Date()));
+  const ids = S.recipes.map(r => r.id).sort(), rnd = seeded(S.pickSeed);
+  for(let i = ids.length - 1; i > 0; i--){ const j = Math.floor(rnd() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+  return ids.slice(0, 12);
 }
-const deckIds = () => (S.deck || []).filter(id => byId(id));
-function swipeCardHTML(r, pos){
-  const L = look(r), url = safeUrl(r.image_url), tags = tagsOf(r);
-  return `<div class="swipe-card ${pos}${pos === 'top' && S.pop === 'deck' ? ' in' : ''}" ${pos === 'top' ? `id="topCard" data-act="shOpen" data-id="${esc(r.id)}"` : 'aria-hidden="true"'}>
-    <div class="sc-media" style="background:${L.c}">
-      ${shape(L.s, L.c2)}
-      ${url ? `<img src="${esc(url)}" alt="" draggable="false" onerror="this.remove()" />` : ''}
-      ${isNew(r) ? `<div class="sc-badge">${newBadge('big')}</div>` : ''}
-    </div>
-    <div class="sc-body">
-      ${tags.length ? `<span class="kicker" style="font-size:13px">${esc(tags.slice(0, 3).join(' · '))}</span>` : ''}
-      <div class="sc-title">${esc(r.title)}</div>
-      ${r.description ? `<p class="sc-desc">${esc(r.description)}</p>` : ''}
-      <div class="sc-meta">${esc(metaOf(r))}</div>
-    </div>
-  </div>`;
-}
-function shuffleHTML(){
-  if(!S.deck) newDeck();
-  const ids = deckIds();
-  const cur = byId(ids[S.di]), next = byId(ids[S.di + 1]), prev = S.di > 0 ? byId(ids[S.di - 1]) : null;
-  const head = `<div class="row-between pad">
-      <button class="circle-btn" data-act="go" data-v="home" aria-label="Zurück" style="font-size:20px">←</button>
-      <span class="kicker">${cur ? `${S.di + 1} / ${ids.length}` : 'Shuffle'}</span>
-      <button class="circle-btn" data-act="shMix" aria-label="Neu mischen">${shape('sparkle', C.yellow, 'width:22px;height:22px')}</button>
-    </div>`;
-  if(!cur){
-    return `<div class="shuffle top-pad">${head}
-      <div class="empty" style="flex:1;justify-content:center">
-        ${shape('burst', C.pink, 'width:120px;height:120px')}
-        <div class="et" style="font-size:28px">Alle durch!</div>
-        <div class="muted" style="font-size:15px">Du hast dir alle ${ids.length} Rezepte angesehen.</div>
-        <button class="cta" data-act="shMix" style="width:auto;height:52px;padding:0 26px;margin-top:10px">Nochmal mischen</button>
-        <button class="today-link" data-act="shPrev" style="margin-top:6px">Zurück zum letzten Rezept</button>
+function carouselHTML(){
+  const ids = pickIds();
+  if(S.pickIndex >= ids.length) S.pickIndex = 0;
+  const slides = ids.map((id, i) => {
+    const r = byId(id), L = look(r), url = safeUrl(r.image_url), tags = tagsOf(r);
+    return `<button class="slide" data-act="slide" data-id="${esc(r.id)}" data-i="${i}" aria-label="${esc(r.title)}">
+      <div class="sl-media" style="background:${L.c}">
+        ${shape(L.s, L.c2)}
+        ${url ? `<img src="${esc(url)}" alt="" loading="${i < 3 ? 'eager' : 'lazy'}" decoding="async" draggable="false" onerror="this.remove()" />` : ''}
+        ${isNew(r) ? `<div class="sl-badge">${newBadge('big')}</div>` : ''}
       </div>
-    </div>`;
-  }
-  const fav = S.favs.includes(cur.id);
-  return `<div class="shuffle top-pad">${head}
-    <div class="deck" id="deck">${prev ? swipeCardHTML(prev, 'under prev') : ''}${next ? swipeCardHTML(next, 'under next') : ''}${swipeCardHTML(cur, 'top')}</div>
-    <div class="deck-actions">
-      <button class="circle-btn" data-act="shPrev" aria-label="Vorheriges Rezept" ${S.di ? '' : 'disabled style="opacity:.35"'}>↶</button>
-      <button class="cta" data-act="shOpen" data-id="${esc(cur.id)}">Rezept öffnen</button>
-      <button class="circle-btn" data-act="fav" data-id="${esc(cur.id)}" aria-label="${fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten'}">${flower(fav)}</button>
+      <div class="sl-body">
+        ${tags.length ? `<span class="kicker" style="font-size:12px">${esc(tags.slice(0, 3).join(' · '))}</span>` : ''}
+        <div class="sl-title">${esc(r.title)}</div>
+        <div class="sl-meta">${esc(metaOf(r))}</div>
+      </div>
+    </button>`;
+  }).join('');
+  return `<div class="car-head">
+      <div><span class="kicker">Heute für dich</span><h2 class="serif">Lass dich inspirieren</h2></div>
+      <button class="circle-btn${S.pop === 'mix' ? ' pop' : ''}" data-act="pickMix" aria-label="Neu mischen">${shape('sparkle', C.yellow, 'width:22px;height:22px')}</button>
     </div>
-    <p class="deck-hint">Nach links wischen: nächstes Rezept · nach rechts: vorheriges<br>Tippen zum Öffnen</p>
-  </div>`;
+    <div class="carousel${S.pop === 'mix' ? ' mix' : ''}" id="carousel">${slides}</div>
+    <div class="dots" id="dots">${ids.map((_, i) => `<button class="dot${i === S.pickIndex ? ' on' : ''}" data-act="dot" data-i="${i}" aria-label="Rezept ${i + 1} von ${ids.length}"><span>${i + 1}/${ids.length}</span></button>`).join('')}</div>`;
 }
-// Nach links aus dem Bild wischen = nächstes Rezept, nach rechts = vorheriges.
-function shuffleStep(dir){
-  const card = $('topCard');
-  const apply = () => { S.di += dir > 0 ? 1 : -1; S.pop = 'deck'; render(); };
-  if(!card) return apply();
-  haptic();
-  $('deck')?.classList.toggle('dir-prev', dir < 0);
-  card.removeAttribute('data-act');
-  const out = dir > 0 ? -1 : 1;
-  card.style.transition = 'transform .28s ease-in, opacity .28s ease-in';
-  card.style.transform = `translate(${out * (window.innerWidth + 200)}px, 40px) rotate(${out * 26}deg)`;
-  card.style.opacity = '0';
-  setTimeout(apply, 230);
-}
-const shuffleNext = () => shuffleStep(1);
-function shufflePrev(){
-  if(S.di > 0) shuffleStep(-1);
-  else { haptic(); toast('Das ist das erste Rezept'); }
-}
-// Wischgeste auf der obersten Karte
-let drag = null;
-document.addEventListener('pointerdown', e => {
-  const card = e.target.closest('#topCard');
-  if(!card || e.button > 0) return;
-  drag = { card, pid: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, dy: 0, moved: false };
-  card.setPointerCapture(e.pointerId);
-  card.style.transition = 'none';
-});
-document.addEventListener('pointermove', e => {
-  if(!drag || e.pointerId !== drag.pid) return;
-  drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y;
-  if(Math.abs(drag.dx) + Math.abs(drag.dy) > 8) drag.moved = true;
-  if(drag.moved){
-    // Ganz am Anfang gibt es kein vorheriges Rezept: die Karte gibt nur leicht nach.
-    const dx = drag.dx > 0 && S.di === 0 ? drag.dx * .25 : drag.dx;
-    drag.card.style.transform = `translate(${dx}px, ${drag.dy * .2}px) rotate(${dx / 16}deg)`;
-    $('deck')?.classList.toggle('dir-prev', drag.dx > 12);
+// Mittlere Karte voll, Nachbarn kleiner und blasser – stufenlos mit der Scrollposition.
+let carRaf = 0;
+function updateCarousel(){
+  carRaf = 0;
+  const track = $('carousel');
+  if(!track) return;
+  const mid = track.scrollLeft + track.clientWidth / 2;
+  let best = 0, bestD = Infinity;
+  [...track.children].forEach((sl, i) => {
+    const d = (sl.offsetLeft + sl.offsetWidth / 2 - mid) / (sl.offsetWidth + 12);
+    const a = Math.min(1, Math.abs(d));
+    sl.style.setProperty('--s', (1 - .1 * a).toFixed(3));
+    sl.style.setProperty('--o', (1 - .45 * a).toFixed(3));
+    if(Math.abs(d) < bestD){ bestD = Math.abs(d); best = i; }
+  });
+  S.carScroll = track.scrollLeft;
+  if(best !== S.pickIndex){
+    S.pickIndex = best;
+    haptic();
+    document.querySelectorAll('#dots .dot').forEach((d, i) => d.classList.toggle('on', i === best));
   }
-});
-function endDrag(e){
-  if(!drag || e.pointerId !== drag.pid) return;
-  const d = drag; drag = null;
-  if(!d.moved) return;
-  // Nach einer Wischbewegung soll der folgende Klick die Karte nicht öffnen.
-  d.card.removeAttribute('data-act');
-  if(e.type === 'pointerup' && d.dx < -90) return shuffleNext();
-  if(e.type === 'pointerup' && d.dx > 90){
-    if(S.di > 0) return shuffleStep(-1);
-    haptic(); toast('Das ist das erste Rezept');
-  }
-  $('deck')?.classList.remove('dir-prev');
-  d.card.style.transition = 'transform .4s cubic-bezier(.34,1.56,.64,1)';
-  d.card.style.transform = '';
-  setTimeout(() => d.card.setAttribute('data-act', 'shOpen'), 0);
 }
-document.addEventListener('pointerup', endDrag);
-document.addEventListener('pointercancel', endDrag);
+function scrollToSlide(i){
+  const track = $('carousel'), sl = track && track.children[i];
+  if(!sl) return;
+  track.scrollTo({ left: sl.offsetLeft - (track.clientWidth - sl.offsetWidth) / 2, behavior: reducedMotion() ? 'auto' : 'smooth' });
+}
 
 function filterCount(){ const f = S.sf; return (f.time ? 1 : 0) + (f.kcal ? 1 : 0) + (f.fav ? 1 : 0) + (f.neu ? 1 : 0) + f.tags.length; }
 function allTags(){
@@ -1734,7 +1687,7 @@ function render(){
   const selPos = focused ? focused.selectionStart : 0;
   const entering = scr.dataset.key !== key || S.anim;
   rememberChipScroll();
-  const html = { home: homeHTML, detail: detailHTML, cook: cookHTML, plan: planHTML, fav: favHTML, edit: editHTML, search: searchHTML, shop: shopHTML, shuffle: shuffleHTML }[S.screen]();
+  const html = { home: homeHTML, detail: detailHTML, cook: cookHTML, plan: planHTML, fav: favHTML, edit: editHTML, search: searchHTML, shop: shopHTML }[S.screen]();
   scr.innerHTML = html;
   scr.dataset.key = S.screen + ':' + (S.rid || '');
   if(entering && scr.firstElementChild) scr.firstElementChild.classList.add('enter');
@@ -1798,18 +1751,19 @@ function releaseWake(){ try{ wakeLock?.release(); }catch{} wakeLock = null; }
 // ---------- Haptik & Ton ----------
 // iOS Safari kennt navigator.vibrate nicht. Seit iOS 18 löst das Umschalten eines
 // <input switch> aber ein haptisches Tippen aus – das nutzen wir unsichtbar.
-const hapticSwitch = (() => {
-  const label = document.createElement('label');
-  label.className = 'vh'; label.setAttribute('aria-hidden', 'true');
-  const input = document.createElement('input');
-  input.type = 'checkbox'; input.setAttribute('switch', ''); input.tabIndex = -1;
-  label.appendChild(input); document.body.appendChild(label);
-  return label;
-})();
 function haptic(){
   try{
-    if(navigator.vibrate) navigator.vibrate(12);
-    else hapticSwitch.click();
+    if(navigator.vibrate){ navigator.vibrate(10); return; }
+    const label = document.createElement('label');
+    label.setAttribute('aria-hidden', 'true');
+    label.style.display = 'none';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.setAttribute('switch', '');
+    label.appendChild(input);
+    document.head.appendChild(label);
+    label.click();
+    label.remove();
   }catch{}
 }
 let audioCtx = null;
@@ -1983,7 +1937,7 @@ async function deleteRecipe(){
 // ============================================================
 // Events
 // ============================================================
-const HAPTIC = new Set(['shuffle','shMix','shPrev','ingOrder','catEdit','fOpen','fTime','fKcal','fTagMode','fReset','fClear','shopCheck','sfTime','sfFav','sfNew','sfTag','sqSet','refresh','theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
+const HAPTIC = new Set(['open','openFromSearch','slide','dot','pickMix','ingOrder','catEdit','fOpen','fTime','fKcal','fTagMode','fReset','fClear','shopCheck','sfTime','sfFav','sfNew','sfTag','sqSet','refresh','theme','new','cat','fav','tab','serv','check','cook','prev','next','timer','week','day','pick','pickToggle','assign','sheetDay','sheetSlot','assignConfirm','planRemove','go','save','delete','addIng','delIng']);
 document.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]');
   if(!el) return;
@@ -1996,12 +1950,16 @@ document.addEventListener('click', async e => {
     case 'closeEdit': S.rid ? openRecipe(S.rid) : go('home'); break;
     case 'cat': S.cat = v; render(); break;
     case 'open': S.back = null; openRecipe(id); break;
-    case 'home': stopTimer(); if(S.screen === 'detail' && S.back === 'search'){ S.back = null; go('search'); } else if(S.screen === 'detail' && S.back === 'shuffle'){ S.back = null; go('shuffle'); } else { S.back = null; go('home'); } break;
-    case 'shuffle': newDeck(); go('shuffle'); break;
-    case 'shMix': newDeck(); S.pop = 'deck'; render(); break;
-    case 'shPrev': if(S.di > 0 && !$('topCard')){ S.di--; S.pop = 'deck'; render(); } else shufflePrev(); break;
-    case 'shOpen': S.back = 'shuffle'; openRecipe(id); break;
-    case 'go': go(v); break;
+    case 'home': stopTimer(); if(S.screen === 'detail' && S.back === 'search'){ S.back = null; go('search'); } else { S.back = null; go('home'); } break;
+    case 'slide': { const i = Number(el.dataset.i); if(i === S.pickIndex){ S.back = null; openRecipe(id); } else scrollToSlide(i); break; }
+    case 'dot': scrollToSlide(Number(el.dataset.i)); break;
+    case 'pickMix': { const c = $('carousel'); if(c) c.scrollLeft = 0; S.pickSeed = Math.floor(Math.random() * 1e9); S.pickIndex = 0; S.carScroll = 0; S.pop = 'mix'; render(); break; }
+    case 'go': {
+      // Erneutes Tippen auf den aktiven Tab scrollt sanft nach oben.
+      const sc = v === S.screen && $('screen').querySelector('[data-scroll]');
+      if(sc && sc.scrollTop > 0){ sc.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' }); break; }
+      go(v); break;
+    }
     case 'refresh': refresh(); break;
     case 'search': go('search'); setTimeout(() => $('sq')?.focus(), 60); break;
     case 'sqClear': S.q = ''; $('sq').value = ''; $('sq').focus(); renderSearchBody(); break;
@@ -2082,10 +2040,6 @@ document.addEventListener('change', e => {
 document.addEventListener('keydown', e => {
   if(e.key === 'Enter' && e.target.id === 'sq'){ rememberSearch(); e.target.blur(); }
   if(e.key === 'Escape' && S.sheet) closeSheet();
-  if(S.screen === 'shuffle' && !S.sheet && !e.target.closest('input,textarea')){
-    if(e.key === 'ArrowRight') shuffleNext();
-    if(e.key === 'ArrowLeft') shufflePrev();
-  }
 });
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && S.screen === 'cook') requestWake();
@@ -2094,7 +2048,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Update-Prüfung ----------
 // GitHub Pages lässt Browser die Seite ~10 Min cachen. Wir fragen die aktuelle
 // Version am Server ab und bieten ein Neuladen an, sobald sie abweicht.
-const APP_VERSION = '2026-10-14.2';
+const APP_VERSION = '2026-10-14.3';
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{
